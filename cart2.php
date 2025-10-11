@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once('bin/page_settings.php');
+require_once('bin/page_settings.php'); 
 ?> 
 <!DOCTYPE html>
 <html lang="en">
