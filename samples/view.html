@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Library</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 25px 30px;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .status-pending {
+            background-color: #ffedd5;
+            color: #f97316;
+        }
+        .status-downloaded {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .table-header {
+            background-color: #f8fafc;
+        }
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+        .action-btn:hover:not(.disabled) {
+            transform: translateY(-2px);
+        }
+        .filter-btn {
+            transition: all 0.3s ease;
+        }
+        .filter-btn.active {
+            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+        }
+        .disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            font-weight: 500;
+            transition: all 0.2s;
+            height: 2rem;
+            border-radius: 0.375rem;
+            padding: 0 0.75rem;
+            font-size: 0.75rem;
+            background-color: #2563eb;
+            color: white;
+        }
+        .download-btn:hover:not(.disabled) {
+            background-color: #1d4ed8;
+        }
+        .download-btn.disabled {
+            background-color: #9ca3af;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1 class="text-2xl font-bold mb-2">Reports Library</h1>
+                <p class="text-blue-100">Access your downloaded reports and track their status</p>
+            </div>
+            
+            <div class="p-6">
+                <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-700">Filter by status:</span>
+                        <div class="flex bg-gray-100 rounded-lg p-1">
+                            <button class="filter-btn px-3 py-1 rounded-md text-sm active">All</button>
+                            <button class="filter-btn px-3 py-1 rounded-md text-sm">Pending</button>
+                            <button class="filter-btn px-3 py-1 rounded-md text-sm">Downloaded</button>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="text" placeholder="Search reports..." class="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="w-full caption-bottom text-sm">
+                        <thead class="table-header">
+                            <tr class="border-b transition-colors hover:bg-muted/50">
+                                <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Report Title</th>
+                                <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Category</th>
+                                <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Status</th>
+                                <th class="h-10 px-2 text-left align-middle font-medium text-muted-foreground">Downloaded On</th>
+                                <th class="h-10 px-2 align-middle font-medium text-muted-foreground text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b transition-colors hover:bg-muted/50">
+                                <td class="p-2 align-middle font-medium">Blockchain in Finance 2024</td>
+                                <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Finance</span></td>
+                                <td class="p-2 align-middle"><span class="status-badge status-downloaded">Downloaded</span></td>
+                                <td class="p-2 align-middle">1/15/2024</td>
+                                <td class="p-2 align-middle text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button class="download-btn action-btn">
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b transition-colors hover:bg-muted/50">
+                                <td class="p-2 align-middle font-medium">List of Hotels</td>
+                                <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Academic Research</span></td>
+                                <td class="p-2 align-middle"><span class="status-badge status-pending">Pending</span></td>
+                                <td class="p-2 align-middle">1/15/2024</td>
+                                <td class="p-2 align-middle text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button class="download-btn action-btn disabled" disabled>
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b transition-colors hover:bg-muted/50">
+                                <td class="p-2 align-middle font-medium">Report A</td>
+                                <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Academic Research</span></td>
+                                <td class="p-2 align-middle"><span class="status-badge status-downloaded">Downloaded</span></td>
+                                <td class="p-2 align-middle">1/15/2024</td>
+                                <td class="p-2 align-middle text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button class="download-btn action-btn">
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b transition-colors hover:bg-muted/50">
+                                <td class="p-2 align-middle font-medium">AI Market Trends</td>
+                                <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Technology</span></td>
+                                <td class="p-2 align-middle"><span class="status-badge status-pending">Pending</span></td>
+                                <td class="p-2 align-middle">2/22/2024</td>
+                                <td class="p-2 align-middle text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button class="download-btn action-btn disabled" disabled>
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b transition-colors hover:bg-muted/50">
+                                <td class="p-2 align-middle font-medium">Global Economic Outlook</td>
+                                <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Economics</span></td>
+                                <td class="p-2 align-middle"><span class="status-badge status-downloaded">Downloaded</span></td>
+                                <td class="p-2 align-middle">3/05/2024</td>
+                                <td class="p-2 align-middle text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button class="download-btn action-btn">
+                                            <i class="fas fa-download mr-1"></i> Download
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex items-center justify-between mt-6">
+                    <span class="text-sm text-gray-600">Showing 5 of 32 reports</span>
+                    <div class="flex gap-1">
+                        <button class="px-3 py-1 rounded border text-sm bg-gray-100 text-gray-600"><i class="fas fa-chevron-left"></i></button>
+                        <button class="px-3 py-1 rounded border text-sm bg-blue-600 text-white">1</button>
+                        <button class="px-3 py-1 rounded border text-sm hover:bg-gray-100">2</button>
+                        <button class="px-3 py-1 rounded border text-sm hover:bg-gray-100">3</button>
+                        <button class="px-3 py-1 rounded border text-sm hover:bg-gray-100"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple interaction for filter buttons
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Filter functionality (simplified for demo)
+                const filterText = this.textContent.trim();
+                if (filterText === 'All') {
+                    document.querySelectorAll('tbody tr').forEach(row => {
+                        row.style.display = 'table-row';
+                    });
+                } else {
+                    document.querySelectorAll('tbody tr').forEach(row => {
+                        const status = row.querySelector('.status-badge').textContent;
+                        if (status === filterText) {
+                            row.style.display = 'table-row';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        });
+        
+        // Download button interaction
+        document.querySelectorAll('.download-btn:not(.disabled)').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const title = row.querySelector('td:first-child').textContent;
+                
+                // Show a confirmation message
+                const Toast = {
+                    init() {
+                        this.hideTimeout = null;
+                        
+                        this.el = document.createElement('div');
+                        this.el.className = 'toast';
+                        this.el.style.position = 'fixed';
+                        this.el.style.bottom = '20px';
+                        this.el.style.left = '50%';
+                        this.el.style.transform = 'translateX(-50%)';
+                        this.el.style.backgroundColor = '#16a34a';
+                        this.el.style.color = 'white';
+                        this.el.style.padding = '12px 20px';
+                        this.el.style.borderRadius = '8px';
+                        this.el.style.zIndex = '1000';
+                        this.el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                        this.el.style.opacity = '0';
+                        this.el.style.transition = 'opacity 0.3s';
+                        document.body.appendChild(this.el);
+                    },
+                    
+                    show(message) {
+                        clearTimeout(this.hideTimeout);
+                        
+                        this.el.textContent = message;
+                        this.el.style.opacity = '1';
+                        
+                        this.hideTimeout = setTimeout(() => {
+                            this.el.style.opacity = '0';
+                        }, 3000);
+                    }
+                };
+                
+                Toast.init();
+                Toast.show(`Downloading: ${title}`);
+                
+                // In a real application, this would trigger the actual download
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+.gradient-bg {
+            background: linear-gradient(to bottom, #f7f8fa, #e7e9ec);
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .scroll-hidden::-webkit-scrollbar {
+            display: none;
+        }
+        .deal-badge {
+            background: linear-gradient(to bottom,#f7dfa5,#f0c14b);
+            box-shadow: 0 1px 0 rgba(255,255,255,.4) inset;
+        }
+        .scroll-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .nav-hover:hover {
+            border: 1px solid #4b5563;
+        }
+        .account-btn {
+            transition: all 0.2s ease;
+        }
+        .account-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        /* Mobile menu styles */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #1f2937; /* bg-gray-800 */
+            position: absolute;
+            left: 0;
+            right: 0;
+            z-index: 50;
+        }
+        
+        .mobile-menu.open {
+            max-height: 1000px;
+            transition: max-height 0.5s ease-in;
+        }
+        
+        .search-select {
+            display: none;
+        }
+        
+        @media (min-width: 640px) {
+            .search-select {
+                display: block;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-menu-button {
+                display: none;
+            }
+            .mobile-menu {
+                display: none;
+            }
+            .desktop-nav {
+                display: flex;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .desktop-nav {
+                display: none;
+            }
+            .mobile-menu-button {
+                display: block;
+            }
+        }
