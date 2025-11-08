@@ -1,10 +1,30 @@
 <?php
  session_start();
  require_once('bin/page_settings.php');
+ require_once('bin/functions.php');
+ require_once('xsert.php');
+ 
  // Redirect if already logged in
  $user_id = $_SESSION['user_id'] ?? '';
  $user_name = $_SESSION['user_name'] ?? '';
  $user_email = $_SESSION['user_email'] ?? '';
+
+ // Get featured experts (top 3 approved experts)
+ $experts_stmt = $conn->prepare("
+     SELECT e.*, 
+            GROUP_CONCAT(DISTINCT es.specialty SEPARATOR ', ') as specialties,
+            GROUP_CONCAT(DISTINCT ec.name SEPARATOR ', ') as categories
+     FROM experts e
+     LEFT JOIN expert_specialties es ON e.id = es.expert_id
+     LEFT JOIN expert_category_assignments eca ON e.id = eca.expert_id
+     LEFT JOIN expert_categories ec ON eca.category_id = ec.id
+     WHERE e.status = 'approved'
+     GROUP BY e.id
+     ORDER BY e.rating DESC, e.total_reviews DESC
+     LIMIT 3
+ ");
+ $experts_stmt->execute();
+ $featured_experts = $experts_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,10 +57,6 @@
                         <div class="text-xl sm:text-2xl font-bold text-yellow-400">50</div>
                         <div class="text-xs text-white/80">New Additions</div>
                     </div>
-                    <!--<div class="bg-white/10 p-2 sm:p-3 rounded border border-white/20 hidden sm:block">
-                        <div class="text-xl sm:text-2xl font-bold text-yellow-400">500+</div>
-                        <div class="text-xs text-white/80">Research Partners</div>
-                    </div>-->
                 </div>
                 
                 <!-- Trust Badges - Compact -->
@@ -74,17 +90,6 @@
             </div>
         </section>
         
-        <!-- Category Sections 
-        <section class="mb-6 sm:mb-8">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-lg sm:text-xl font-bold">Trending in Technology</h2>
-                <a href="#" class="text-sm text-blue-600 hover:underline">Shop now</a>
-            </div>
-            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
-                -- Product cards would go here --
-            </div>
-        </section>
-        -->
         <section class="bg-gradient-to-r from-blue-50 to-indigo-50 py-10 px-4 sm:px-6 rounded-xl shadow-md border border-gray-100 mb-8">
     <div class="max-w-6xl mx-auto">
         <div class="flex flex-col lg:flex-row items-center">
@@ -216,109 +221,124 @@
             </p>
         </div>
 
-        <!-- Expert Cards - Mobile Carousel -->
-        <div class="lg:hidden relative">
-            <div class="overflow-x-auto pb-4">
-                <div class="flex space-x-4" style="width: max-content;">
-                    <!-- Expert 1 - Mobile -->
-                    <div class="w-72 flex-shrink-0">
-                        <div class="rounded-xl border border-gray-200 shadow-md overflow-hidden flex flex-col bg-white h-full">
-                            <div class="relative h-32 bg-gradient-to-r from-blue-500 to-indigo-600">
-                                <div class="absolute -bottom-8 left-4">
-                                    <div class="relative flex shrink-0 overflow-hidden rounded-full h-16 w-16 border-2 border-white bg-white">
-                                        <img class="aspect-square h-full w-full" alt="Dr. Jane Smith" src="https://api.dicebear.com/7.x/avataaars/svg?seed=expert1">
+        <?php if (empty($featured_experts)): ?>
+            <!-- No Experts Available -->
+            <div class="text-center py-12">
+                <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">No Experts Available Yet</h3>
+                <p class="text-gray-500 mb-6">Be the first to join our expert network and share your expertise!</p>
+                <a href="<?php echo BASE_URL; ?>/expert-registration.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 h-10 px-6">
+                    Become an Expert
+                </a>
+            </div>
+        <?php else: ?>
+            <!-- Expert Cards - Mobile Carousel -->
+            <div class="lg:hidden relative">
+                <div class="overflow-x-auto pb-4">
+                    <div class="flex space-x-4" style="width: max-content;">
+                        <?php foreach ($featured_experts as $expert): 
+                            $expert_specialties = $expert['specialties'] ? explode(', ', $expert['specialties']) : [];
+                            $expert_categories = $expert['categories'] ? explode(', ', $expert['categories']) : [];
+                        ?>
+                        <!-- Expert Card - Mobile -->
+                        <div class="w-72 flex-shrink-0">
+                            <div class="rounded-xl border border-gray-200 shadow-md overflow-hidden flex flex-col bg-white h-full">
+                                <div class="relative h-32 bg-gradient-to-r from-blue-500 to-indigo-600">
+                                    <div class="absolute -bottom-8 left-4">
+                                        <div class="relative flex shrink-0 overflow-hidden rounded-full h-16 w-16 border-2 border-white bg-white">
+                                            <img class="aspect-square h-full w-full" alt="<?php echo htmlspecialchars($expert['first_name'] . ' ' . $expert['last_name']); ?>" src="<?php echo $expert['profile_image'] ? htmlspecialchars($expert['profile_image']) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' . $expert['id']; ?>">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="pt-10 px-4 pb-4 flex-grow">
-                                <div class="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 class="font-bold text-lg text-gray-900">Dr. Jane Smith</h3>
-                                        <p class="text-xs text-gray-500">Harvard University</p>
-                                    </div>
-                                    <div class="flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 fill-yellow-400 text-yellow-400" viewBox="0 0 24 24">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                        </svg>
-                                        <span class="text-xs font-medium">4.8</span>
-                                    </div>
-                                </div>
-                                
-                                <h4 class="text-xs font-semibold text-gray-700 mb-1">Specialties:</h4>
-                                <div class="flex flex-wrap gap-1 mb-2">
-                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">Market Research</span>
-                                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">Finance</span>
-                                </div>
-                                
-                                <div class="flex gap-2 mt-3">
-                                    <a href="/experts/expert-1" class="flex-1">
-                                        <button class="w-full flex items-center justify-center gap-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-1.5 px-2 rounded-lg transition-colors text-xs">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                <div class="pt-10 px-4 pb-4 flex-grow">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h3 class="font-bold text-lg text-gray-900"><?php echo htmlspecialchars($expert['title'] . ' ' . $expert['first_name'] . ' ' . $expert['last_name']); ?></h3>
+                                            <p class="text-xs text-gray-500"><?php echo htmlspecialchars(substr($expert['education'], 0, 30)) . (strlen($expert['education']) > 30 ? '...' : ''); ?></p>
+                                        </div>
+                                        <div class="flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 fill-yellow-400 text-yellow-400" viewBox="0 0 24 24">
+                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                             </svg>
-                                            Profile
-                                        </button>
-                                    </a>
-                                    <button class="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white hover:bg-blue-700 font-medium py-1.5 px-2 rounded-lg transition-colors text-xs">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                                        </svg>
-                                        Contact
-                                    </button>
+                                            <span class="text-xs font-medium"><?php echo number_format($expert['rating'], 1); ?></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <h4 class="text-xs font-semibold text-gray-700 mb-1">Specialties:</h4>
+                                    <div class="flex flex-wrap gap-1 mb-2">
+                                        <?php foreach (array_slice($expert_specialties, 0, 2) as $specialty): ?>
+                                            <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700"><?php echo htmlspecialchars(trim($specialty)); ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    
+                                    <div class="flex gap-2 mt-3">
+                                        <a href="<?php echo BASE_URL; ?>/expert-profile.php?id=<?php echo $expert['id']; ?>" class="flex-1">
+                                            <button class="w-full flex items-center justify-center gap-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-1.5 px-2 rounded-lg transition-colors text-xs">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                </svg>
+                                                Profile
+                                            </button>
+                                        </a>
+                                        <a href="<?php echo BASE_URL; ?>/expert-profile.php?id=<?php echo $expert['id']; ?>" class="flex-1">
+                                            <button class="w-full flex items-center justify-center gap-1 bg-blue-600 text-white hover:bg-blue-700 font-medium py-1.5 px-2 rounded-lg transition-colors text-xs">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                                </svg>
+                                                Contact
+                                            </button>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <?php endforeach; ?>
                     </div>
-
-                    <!-- Expert 2 - Mobile -->
-                    <!-- Repeat similar structure for other experts -->
                 </div>
             </div>
-            <div class="flex justify-center mt-4 space-x-2">
-                <button class="w-2 h-2 rounded-full bg-gray-300" aria-label="Slide 1"></button>
-                <button class="w-2 h-2 rounded-full bg-gray-300" aria-label="Slide 2"></button>
-                <button class="w-2 h-2 rounded-full bg-blue-600" aria-label="Slide 3"></button>
-            </div>
-        </div>
 
-        <!-- Expert Cards - Desktop Grid -->
-        <div class="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Expert 1 - Desktop -->
-            <div class="group transition-all duration-300 hover:-translate-y-1">
-                <div class="rounded-xl border border-gray-200 shadow-lg overflow-hidden flex flex-col bg-white h-full">
-                    <div class="relative h-40 bg-gradient-to-r from-blue-500 to-indigo-600">
-                        <div class="absolute -bottom-12 left-6">
-                            <div class="relative flex shrink-0 overflow-hidden rounded-full h-24 w-24 border-4 border-white bg-white">
-                                <img class="aspect-square h-full w-full" alt="Dr. Jane Smith" src="https://api.dicebear.com/7.x/avataaars/svg?seed=expert1">
+            <!-- Expert Cards - Desktop Grid -->
+            <div class="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php foreach ($featured_experts as $expert): 
+                    $expert_specialties = $expert['specialties'] ? explode(', ', $expert['specialties']) : [];
+                    $expert_categories = $expert['categories'] ? explode(', ', $expert['categories']) : [];
+                ?>
+                <!-- Expert Card - Desktop -->
+                <div class="group transition-all duration-300 hover:-translate-y-1">
+                    <div class="rounded-xl border border-gray-200 shadow-lg overflow-hidden flex flex-col bg-white h-full">
+                        <div class="relative h-40 bg-gradient-to-r from-blue-500 to-indigo-600">
+                            <div class="absolute -bottom-12 left-6">
+                                <div class="relative flex shrink-0 overflow-hidden rounded-full h-24 w-24 border-4 border-white bg-white">
+                                    <img class="aspect-square h-full w-full" alt="<?php echo htmlspecialchars($expert['first_name'] . ' ' . $expert['last_name']); ?>" src="<?php echo $expert['profile_image'] ? htmlspecialchars($expert['profile_image']) : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' . $expert['id']; ?>">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="pt-16 px-6 pb-6 flex-grow">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-bold text-xl text-gray-900">Dr. Jane Smith</h3>
-                                <p class="text-sm text-gray-500">Ph.D. in Economics, Harvard University</p>
-                            </div>
-                            <div class="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
+                        <div class="pt-16 px-6 pb-6 flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold text-xl text-gray-900"><?php echo htmlspecialchars($expert['title'] . ' ' . $expert['first_name'] . ' ' . $expert['last_name']); ?></h3>
+                                    <p class="text-sm text-gray-500"><?php echo htmlspecialchars(substr($expert['education'], 0, 50)) . (strlen($expert['education']) > 50 ? '...' : ''); ?></p>
+                                </div>
+                                <div class="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 fill-yellow-400 text-yellow-400" viewBox="0 0 24 24">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                                     </svg>
-                                    <span class="text-sm font-medium">4.7</span>
-                                    <span class="text-xs text-gray-500">(67)</span>
+                                    <span class="text-sm font-medium"><?php echo number_format($expert['rating'], 1); ?></span>
+                                    <span class="text-xs text-gray-500">(<?php echo $expert['total_reviews']; ?>)</span>
                                 </div>
                             </div>
                             
                             <h4 class="text-sm font-semibold text-gray-700 mb-2">Specialties:</h4>
                             <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="inline-flex items-center rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700">Biotech Research</span>
-                                <span class="inline-flex items-center rounded-full bg-pink-50 px-3 py-1 text-xs font-medium text-pink-700">Pharmaceuticals</span>
-                                <span class="inline-flex items-center rounded-full bg-fuchsia-50 px-3 py-1 text-xs font-medium text-fuchsia-700">Genomics</span>
+                                <?php foreach (array_slice($expert_specialties, 0, 3) as $specialty): ?>
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"><?php echo htmlspecialchars(trim($specialty)); ?></span>
+                                <?php endforeach; ?>
                             </div>
                             
-                            <p class="text-sm text-gray-600 mb-6">Leading researcher in biotechnology innovation with patents in drug discovery and genomic medicine.</p>
+                            <p class="text-sm text-gray-600 mb-6"><?php echo htmlspecialchars(substr($expert['bio'], 0, 100)) . (strlen($expert['bio']) > 100 ? '...' : ''); ?></p>
                             
                             <div class="flex gap-3">
-                                <a href="/experts/expert-3" class="flex-1">
+                                <a href="<?php echo BASE_URL; ?>/expert-profile.php?id=<?php echo $expert['id']; ?>" class="flex-1">
                                     <button class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -326,33 +346,31 @@
                                         Profile
                                     </button>
                                 </a>
-                                <button class="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                                    </svg>
-                                    Contact
-                                </button>
+                                <a href="<?php echo BASE_URL; ?>/expert-profile.php?id=<?php echo $expert['id']; ?>" class="flex-1">
+                                    <button class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                        </svg>
+                                        Contact
+                                    </button>
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
 
-            <!-- Expert 2 - Desktop -->
-            <!-- Repeat similar structure for other experts -->
-        </div>
-
-        <!-- View All Button -->
-        <div class="mt-8 sm:mt-12 text-center">
-            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium border border-gray-300 bg-white shadow-sm hover:bg-gray-50 text-gray-700 h-10 sm:h-11 px-5 sm:px-6 py-2 sm:py-3 transition-colors">
-                View All 127 Experts
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </button>
-        </div>
+            <!-- View All Button -->
+            <div class="mt-8 sm:mt-12 text-center">
+                <a href="<?php echo BASE_URL; ?>/experts.php" class="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium border border-gray-300 bg-white shadow-sm hover:bg-gray-50 text-gray-700 h-10 sm:h-11 px-5 sm:px-6 py-2 sm:py-3 transition-colors">
+                    View All Experts
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
     </main>           

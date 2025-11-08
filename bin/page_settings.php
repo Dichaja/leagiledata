@@ -5,7 +5,8 @@ function siteHeader(){
  $user_id = $_SESSION['user_id'] ?? '';
  $user_name = $_SESSION['user_name'] ?? '';
  $user_email = $_SESSION['user_email'] ?? '';
-
+ $url = isset($_SESSION['admin_usr']) ? '/admin/dashboard.php' : '/dash/dash.php';
+ $downloads = isset($_SESSION['admin_usr']) ? '/admin/downloads_mgmt.php' : '/dash/downloads_report.php';
   ?>
 <!-- Main Navigation -->
     <nav class="bg-gray-900 text-white sticky top-0 z-50">
@@ -56,13 +57,13 @@ function siteHeader(){
           </button>
            <!-- Dropdown Menu -->
            <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
-            <a href="<?php echo BASE_URL ?>/dash/dash.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            <a href="<?php echo BASE_URL . $url ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-user-circle mr-2"></i> My Account</a>
-            <a href="/purchases" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-file-download mr-2"></i> My Downloads</a>
-            <a href="/orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            <a href="<?php echo BASE_URL .  $downloads ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-file-download mr-2"></i>Downloads</a>
+            <!--<a href="/orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-shopping-bag mr-2"></i> My Orders</a>
-                <div class="border-t border-gray-200"></div>
+                <div class="border-t border-gray-200"></div>-->
             <a href="<?php echo BASE_URL ?>/logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-sign-out-alt mr-2"></i> Sign Out</a>
            </div>          
@@ -139,7 +140,7 @@ function siteHeader(){
         <div class="px-3 py-2 border-b border-gray-700">
             <a href="<?php echo BASE_URL ?>/" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">
              <i class="fas fa-home mr-2"></i> Home</a>
-           <a href="<?php echo BASE_URL ?>/dash/dash.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">
+           <a href="<?php echo BASE_URL . $url ?>" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">
              <i class="fas fa-user-circle mr-2"></i> My Account</a>
            <a href="<?php echo BASE_URL ?>/dash/downloads_report.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">
              <i class="fas fa-file-download mr-2"></i>My Downloads</a>
@@ -150,10 +151,10 @@ function siteHeader(){
         <!-- Navigation Links -->
         <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">New Releases</a>
         <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Premium Datasets</a>
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Research Services</a>
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Subscription Plans</a>
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Experts</a>
-        <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Donation</a>
+        <a href="<?php echo BASE_URL ?>/services.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Our Services</a>
+        <a href="<?php echo BASE_URL ?>/subscriptions.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Subscription Plans</a>
+        <a href="<?php echo BASE_URL ?>/expert.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Experts</a>
+        <a href="<?php echo BASE_URL ?>/donate.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">Donation</a>
         <!-- Sign Out Button - Now Properly Included -->
             <div class="border-t border-gray-700 pt-2">
                 <a href="<?php echo BASE_URL ?>/logout.php" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-sm font-medium">
@@ -176,9 +177,9 @@ function siteHeader(){
             <a href="<?php echo BASE_URL ?>/categories.php" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">All Categories</a>
             <a href="#" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Trending</a>
             <a href="<?php echo BASE_URL ?>/services.php" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Our Services</a>
-            <a href="#" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Subscription Plans</a>
-            <a href="#" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Experts</a>
-            <a href="#" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Donation</a>
+            <a href="<?php echo BASE_URL ?>/subscriptions.php" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Subscription Plans</a>
+            <a href="<?php echo BASE_URL ?>/experts.php" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Experts</a>
+            <a href="<?php echo BASE_URL ?>/donate.php" class="text-sm font-medium hover:text-yellow-300 whitespace-nowrap py-2">Donation</a>
         </div>
     </div>
  </div>
@@ -222,7 +223,7 @@ function siteHeader_old(){
       <a href="categories.php" class="text-sm font-medium hover:text-primary transition-colors">Categories</a>
       <a href="experts.php" class="text-sm font-medium hover:text-primary transition-colors">Experts</a>
       <a href="subscriptions.php" class="text-sm font-medium hover:text-primary transition-colors">Subscription Plans</a>
-      <a href="donate.php" class="text-sm font-medium hover:text-primary transition-colors">Donation</a>
+      <a href="<?php echo BASE_URL ?>/donate.php" class="text-sm font-medium hover:text-primary transition-colors">Donation</a>
       <a href="services.php" class="text-sm font-medium hover:text-primary transition-colors">Services</a>
     </nav>
 
@@ -307,7 +308,7 @@ function siteHeader_old(){
     <a href="categories.php" class="text-sm font-medium hover:text-primary transition-colors">Categories</a>
     <a href="experts.php" class="text-sm font-medium hover:text-primary transition-colors">Experts</a>
     <a href="subscriptions.php" class="text-sm font-medium hover:text-primary transition-colors">Subscription Plans</a>
-    <a href="donate.php" class="text-sm font-medium hover:text-primary transition-colors">Donation</a>
+    <a href="<?php echo BASE_URL ?>/donate.php" class="text-sm font-medium hover:text-primary transition-colors">Donation</a>
     <a href="services.php" class="text-sm font-medium hover:text-primary transition-colors">Services</a>
   </nav>
 </div>

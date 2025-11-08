@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../xsert.php';
 require_once __DIR__ . '/../bin/functions.php';
 require_once __DIR__ . '/../send_email.php';
+require_once __DIR__ . '/../bin/sms_handler.php';
 
 header('Content-Type: application/json');
 
@@ -37,6 +38,84 @@ try {
             ]);
         }
 
+    } elseif (strpos($input['action'], 'TXN') === 0) {
+        // This is a transaction code generation - send SMS notification
+        
+        // Get user details
+        $stmt = $conn->prepare("SELECT usr_name, email FROM users WHERE id = :user_id");
+        $stmt->execute([':user_id' => $input['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user) {
+            // Get cart items for this user to calculate total
+            $stmt = $conn->prepare("
+                SELECT rd.*, r.title, r.price 
+                FROM report_downloads rd 
+                JOIN reports r ON rd.item_id = r.id 
+                WHERE rd.user_id = :user_id AND rd.download_status = 'pending'
+            ");
+            $stmt->execute([':user_id' => $input['user_id']]);
+            $cart_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $total_amount = 0;
+            $items_count = count($cart_items);
+            
+            foreach ($cart_items as $item) {
+                $total_amount += $item['price'];
+            }
+            
+            // Send SMS notification to admin
+            $sms_result = sendPaymentAlertSMS(
+                $user['usr_name'],
+                $user['email'],
+                $input['action'], // This is the transaction code
+                number_format($total_amount, 2),
+                $items_count
+            );
+            
+            // Log SMS activity
+            logSMSActivity(
+                '256773089254',
+                "Payment alert for user: " . $user['usr_name'],
+                $sms_result['success'] ? 'sent' : 'failed',
+                $sms_result
+            );
+            
+            // Update or insert payment record with transaction code
+            $stmt = $conn->prepare("SELECT id FROM report_downloads WHERE user_id = :user_id AND item_id = :item_id");
+            $stmt->execute([
+                ':user_id' => $input['user_id'],
+                ':item_id' => $input['item_id']
+            ]);
+            $qryReport = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($qryReport) {
+                // Check if payment record exists
+                $stmt = $conn->prepare("SELECT id FROM payments WHERE trans = :trans");
+                $stmt->execute([':trans' => $qryReport['id']]);
+                $existing_payment = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($existing_payment) {
+                    // Update existing payment with transaction code
+                    $stmt = $conn->prepare("UPDATE payments SET trans_id = :trans_id, updated_at = NOW() WHERE trans = :trans");
+                    $stmt->execute([
+                        ':trans_id' => $input['action'],
+                        ':trans' => $qryReport['id']
+                    ]);
+                } else {
+                    // Insert new payment record
+                    $stmt = $conn->prepare("INSERT INTO payments 
+                        (id, trans, trans_id, acc_frm, acc_paid_to, pay_status, created_at, updated_at) 
+                        VALUES (:id, :trans, :trans_id, '', '', '00', NOW(), NOW())");
+                    $stmt->execute([
+                        ':id' => $id,
+                        ':trans' => $qryReport['id'],
+                        ':trans_id' => $input['action']
+                    ]);
+                }
+            }
+        }
+
     } elseif ($input['action'] === 'approve') {
 
         $accFrom = $input['account_type'] ?? '';
@@ -44,14 +123,14 @@ try {
         $accountDetails = $accFrom . ' - ' . $accNo;
 
         // Update payments
-        $stmt = $conn->prepare("UPDATE payments SET acc_frm = :acc_frm, pay_status = '01', updated_at = NOW()  WHERE id = :download_id");
+        $stmt = $conn->prepare("UPDATE payments SET acc_frm = :acc_frm, pay_status = '01', updated_at = NOW()  WHERE trans = :download_id");
         $stmt->execute([
             ':acc_frm' => $accountDetails,
             ':download_id' => $input['item_id']
         ]);
 
         // Update report_downloads
-        $stmt = $conn->prepare("SELECT r.id, u.usr_name, u.email  FROM report_downloads r JOIN users u ON r.user_id = u.id JOIN payments p ON r.id = p.trans WHERE p.id = :pay_id");
+        $stmt = $conn->prepare("SELECT r.id, u.usr_name, u.email  FROM report_downloads r JOIN users u ON r.user_id = u.id JOIN payments p ON r.id = p.trans WHERE p.trans = :pay_id");
         $stmt->execute([':pay_id' => $input['item_id']]);
         $qryReport = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -77,9 +156,9 @@ $body = '<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-famil
                         Access Downloads
                     </a>
                 </p>
-                <p>If the button doesn’t work, copy and paste this link into your browser:</p>
+                <p>If the button doesn\'t work, copy and paste this link into your browser:</p>
                 <p style="word-break: break-all; color: #4CAF50;">' . $downloadLink . '</p>
-                <p>If you didn’t make this payment, please contact our support team immediately.</p>
+                <p>If you didn\'t make this payment, please contact our support team immediately.</p>
                 <p>Best regards,<br>Leagile Research Team</p>
             </div>
             <div style="padding: 15px; text-align: center; font-size: 12px; color: #666; background: #f0f0f0; border-radius: 0 0 8px 8px;">

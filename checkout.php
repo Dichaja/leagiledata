@@ -1,6 +1,8 @@
 <?php
 session_start();
-require_once('bin/page_settings.php');
+require __DIR__ . '/bin/page_settings.php';
+require __DIR__  . '/bin/functions.php';
+require __DIR__ . '/xsert.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -441,6 +443,8 @@ require_once('bin/page_settings.php');
 
   </div>
 </main>
+<!-- footer section -->
+<?php siteFooter() ?>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
   // Tab switching functionality

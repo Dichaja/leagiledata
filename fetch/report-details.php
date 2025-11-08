@@ -31,7 +31,7 @@ try {
     }
     
     // Add additional dataset-specific fields if needed
-    $report['formats'] = ['CSV', 'JSON']; // Example formats
+    $report['formats'] = ['CSV', 'JSON','PDF']; // Example formats
     $report['size'] = '5MB'; // Example size
     $report['recordCount'] = 1250; // Example record count
     

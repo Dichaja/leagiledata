@@ -34,7 +34,7 @@ $downloads_stmt->execute([$_SESSION['user_id']]);
  <?php siteHeader() ?>
 <main class="flex-grow">
   <div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
+    <div class="mbs-8">
         <h1 class="text-2xl font-bold text-gray-800">Your Downloads</h1>
         <p class="text-gray-600">2 Item(s)</p>
       </div>
@@ -42,71 +42,8 @@ $downloads_stmt->execute([$_SESSION['user_id']]);
         <!-- Header with Tabs -->
         <div class="sticky-header py-4 md:py-0">
             <div class="flex justify-between items-center mb-4 md:mb-6">
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="p-2 rounded-md text-gray-500">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- Tab Navigation -->
-                <div role="tablist" class="mobile-tab-scroll h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground inline-flex space-x-1 md:grid md:grid-cols-7 w-auto">
-                    <!-- Dashboard Tab -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-chart-bar text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Dashboard</span>
-                    </button>
-
-                    <!-- Downloads Tab (Active) -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-active">
-                        <i class="fas fa-download text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Downloads</span>
-                    </button>
-
-                    <!-- Wishlist Tab -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-heart text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Wishlist</span>
-                    </button>
-
-                    <!-- History Tab -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-history text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">History</span>
-                    </button>
-
-                    <!-- For You Tab -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-star text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">For You</span>
-                    </button>
-
-                    <!-- Services Tab -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-database text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Services</span>
-                    </button>
-
-                    <!-- Profile Tab -->
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-user text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Profile</span>
-                    </button>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex items-center gap-2">
-                    <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors h-9 w-9 hover:bg-gray-100">
-                        <i class="fas fa-bell text-gray-600"></i>
-                    </button>
-                    <button class="hidden md:inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors h-9 w-9 hover:bg-gray-100">
-                        <i class="fas fa-cog text-gray-600"></i>
-                    </button>
-                </div>
-            </div>
-
             <!-- Mobile search bar -->
-            <div class="md:hidden mb-4">
+            <div class="md:hidden mb-4" style="width:100%;">
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     <input class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Search downloads...">

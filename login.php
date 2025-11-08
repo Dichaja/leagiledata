@@ -290,7 +290,7 @@ loginButton.addEventListener('click',function(e){
     .then(data => {
          if (data.success) { 
            if(data.role)
-               window.location.href =  `${BASE_URL}/admin/downloads_mgmt.php`;
+               window.location.href =  `${BASE_URL}/admin/dashboard.php`;
             else      
                window.location.reload();
          }else{

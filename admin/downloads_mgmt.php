@@ -16,9 +16,12 @@ if (isset($_SESSION['user_id'])) {
     exit;
 }
 
-
-// Get stats
-$downloads_stmt = $conn->prepare("SELECT r.title, r.category, d.download_status, d.download_at, r.download_url, u.email, d.created_at, p.trans_id, p.id FROM reports r, report_downloads d LEFT JOIN payments p ON d.id = p.trans , users u WHERE r.id = d.item_id AND u.id = d.user_id");
+// Get stats with proper joins and date fields
+$downloads_stmt = $conn->prepare("SELECT r.title, r.category, r.description, r.file_size, r.file_type, d.download_status, d.download_at, d.created_at, r.download_url, u.email, u.usr_name, p.trans_id, p.id as payment_id, p.updated_at as action_date, d.id as download_id FROM reports r 
+    JOIN report_downloads d ON r.id = d.item_id 
+    LEFT JOIN payments p ON d.id = p.trans 
+    JOIN users u ON u.id = d.user_id 
+    ORDER BY d.created_at DESC");
 $downloads_stmt->execute();
 
 ?>
@@ -197,6 +200,71 @@ $downloads_stmt->execute();
             justify-content: flex-end;
             gap: 12px;
         }
+        
+        .view-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .view-modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .detail-value {
+            color: #666;
+            text-align: right;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+        
+        .delete-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .delete-modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
 </style>
 </head>
 <body>
@@ -208,8 +276,8 @@ $downloads_stmt->execute();
 <main class="flex-grow">
   <div class="container mx-auto px-4 py-8">
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">Your Downloads</h1>
-        <p class="text-gray-600">2 Item(s)</p>
+        <h1 class="text-2xl font-bold text-gray-800">Downloads Management</h1>
+        <p class="text-gray-600">Manage user download requests and approvals</p>
       </div>
       <div class="container mx-auto py-2 md:py-6 px-2 md:px-4 max-w-6xl w-full bg-white rounded-xl shadow-lg">
         <!-- Header with Tabs -->
@@ -222,52 +290,7 @@ $downloads_stmt->execute();
                     </button>
                 </div>
 
-                <!-- Tab Navigation 
-                <div role="tablist" class="mobile-tab-scroll h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground inline-flex space-x-1 md:grid md:grid-cols-7 w-auto">
-                    <!-- Dashboard Tab 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-chart-bar text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Dashboard</span>
-                    </button>
-
-                    <!-- Downloads Tab (Active) 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-active">
-                        <i class="fas fa-download text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Downloads</span>
-                    </button>
-
-                    <!-- Wishlist Tab 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-heart text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Wishlist</span>
-                    </button>
-
-                    <!-- History Tab 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-history text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">History</span>
-                    </button>
-
-                    <!-- For You Tab 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-star text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">For You</span>
-                    </button>
-
-                    <!-- Services Tab 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-database text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Services</span>
-                    </button>
-
-                    <!-- Profile Tab 
-                    <button type="button" role="tab" class="justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all flex items-center gap-2 tab-inactive">
-                        <i class="fas fa-user text-xs md:text-sm"></i>
-                        <span class="hidden sm:inline">Profile</span>
-                    </button>
-                </div>
-
-                <!-- Action Buttons 
+                <!-- Action Buttons -->
                 <div class="flex items-center gap-2">
                     <button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors h-9 w-9 hover:bg-gray-100">
                         <i class="fas fa-bell text-gray-600"></i>
@@ -278,13 +301,13 @@ $downloads_stmt->execute();
                 </div>
             </div>
 
-            <!-- Mobile search bar 
+            <!-- Mobile search bar -->
             <div class="md:hidden mb-4">
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                     <input class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Search downloads...">
                 </div>
-            </div>-->
+            </div>
         </div>
 
         <!-- Downloads Panel (Active) -->
@@ -296,9 +319,9 @@ $downloads_stmt->execute();
                         <div>
                             <h3 class="font-semibold leading-none tracking-tight flex items-center gap-2">
                                 <i class="fas fa-download text-blue-600"></i>
-                                <span>Downloaded Reports</span>
+                                <span>Download Requests</span>
                             </h3>
-                            <p class="text-sm text-muted-foreground mt-1">Access your purchased and downloaded research reports</p>
+                            <p class="text-sm text-muted-foreground mt-1">Manage user download requests and approvals</p>
                         </div>
                         <div class="hidden md:flex items-center gap-2">
                             <div class="relative">
@@ -356,24 +379,30 @@ $downloads_stmt->execute();
                                         $bg_class = 'status-pending';
                                         $activity = 'disabled';
                                 }
+                                
+                                // Format dates properly
+                                $requested_date = $downloads['created_at'] ? date('M d, Y', strtotime($downloads['created_at'])) : '-';
+                                $action_date = ($downloads['action_date'] && $downloads['download_status'] == 'approved') ? date('M d, Y', strtotime($downloads['action_date'])) : '-';
                                 ?>
                                     <tr class="border-b transition-colors hover:bg-muted/50">
-                                        <td class="p-2 align-middle font-medium"><?php echo $downloads['email'] ?></td>
-                                        <td class="p-2 align-middle font-medium"><?php echo $downloads['title'] ?></td>
-                                        <td class="p-2 align-middle font-medium"><?php echo $downloads['trans_id'] ?></td>
-                                        <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"><?php echo $downloads['category'] ?></span></td>
+                                        <td class="p-2 align-middle font-medium"><?php echo htmlspecialchars($downloads['email']) ?></td>
+                                        <td class="p-2 align-middle font-medium"><?php echo htmlspecialchars($downloads['title']) ?></td>
+                                        <td class="p-2 align-middle font-medium"><?php echo htmlspecialchars($downloads['trans_id'] ?? 'N/A') ?></td>
+                                        <td class="p-2 align-middle"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"><?php echo htmlspecialchars($downloads['category']) ?></span></td>
                                         <td class="p-2 align-middle"><span class="status-badge <?php echo $bg_class ?>"><?php echo $status ?></span></td>
-                                        <td class="p-2 align-middle"><?php echo date('M/d/Y',strtotime($downloads['created_at']))?></td>
-                                        <td class="p-2 align-middle">-</td>
+                                        <td class="p-2 align-middle"><?php echo $requested_date ?></td>
+                                        <td class="p-2 align-middle"><?php echo $action_date ?></td>
                                         <td class="p-2 align-middle text-right">
                                           <div class="action-buttons justify-end">
-                                            <button class="action-btn btn-approve" onclick="approvePay('<?php echo $downloads['id'] ?>')">
+                                            <?php if($downloads['download_status'] == 'pending'): ?>
+                                            <button class="action-btn btn-approve" onclick="approvePay('<?php echo $downloads['download_id'] ?>')">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
-                                            <button class="action-btn btn-reject" onclick="rejectReport(1)">
-                                                <i class="fas fa-times"></i>Delete
+                                            <?php endif; ?>
+                                            <button class="action-btn btn-reject" onclick="deleteReport('<?php echo $downloads['download_id'] ?>', '<?php echo htmlspecialchars($downloads['title']) ?>')">
+                                                <i class="fas fa-trash"></i> Delete
                                             </button>
-                                            <button class="action-btn btn-view" onclick="viewDetails(1)">
+                                            <button class="action-btn btn-view" onclick="viewDetails('<?php echo $downloads['download_id'] ?>')">
                                                 <i class="fas fa-eye"></i> View
                                             </button>
                                           </div>
@@ -388,39 +417,24 @@ $downloads_stmt->execute();
 
                 <!-- Mobile Cards -->
                 <div class="md:hidden p-4 space-y-3">
-
-                    <!-- Mobile Card 1 -->
-                    <div class="mobile-card">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-semibold">Global AI Market Trends 2024</h4>
-                                <div class="flex items-center mt-1">
-                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">Technology</span>
-                                    <span class="status-badge status-downloaded">Downloaded</span>
-                                    <span class="text-xs text-gray-500">1/15/2024</span>
-                                </div>
-                            </div>
-                            <div class="dropdown relative">
-                                <button class="dropdown-toggle p-1 rounded hover:bg-gray-100">
-                                    <i class="fas fa-ellipsis-v text-gray-400"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="flex justify-between mt-4">
-                            <button class="flex-1 mr-2 py-2 bg-blue-600 text-white rounded-md text-sm font-medium flex items-center justify-center">
-                                <i class="fas fa-download mr-1"></i> Download
-                            </button>                            
-                        </div>
-                    </div>
                     <?php
-                      while($download = $downloads_stmt->fetch(PDO::FETCH_ASSOC)) : ?>
+                    // Reset the statement for mobile view
+                    $downloads_stmt->execute();
+                    while($download = $downloads_stmt->fetch(PDO::FETCH_ASSOC)) : 
+                        $status_class = $download['download_status'] == 'approved' ? 'status-downloaded' : 'status-pending';
+                        $requested_date = $download['created_at'] ? date('M d, Y', strtotime($download['created_at'])) : '-';
+                    ?>
                         <div class="mobile-card">
                         <div class="flex justify-between items-start">
                             <div>
-                                <h4 class="font-semibold"><?php $download['title']?></h4>
+                                <h4 class="font-semibold"><?php echo htmlspecialchars($download['title']) ?></h4>
                                 <div class="flex items-center mt-1">
-                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2"><?php echo $download['category'] ?></span>
-                                    <span class="text-xs text-gray-500">1/15/2024</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2"><?php echo htmlspecialchars($download['category']) ?></span>
+                                    <span class="status-badge <?php echo $status_class ?>"><?php echo ucfirst($download['download_status']) ?></span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <span>User: <?php echo htmlspecialchars($download['email']) ?></span><br>
+                                    <span>Requested: <?php echo $requested_date ?></span>
                                 </div>
                             </div>
                             <div class="dropdown relative">
@@ -429,9 +443,17 @@ $downloads_stmt->execute();
                                 </button>
                             </div>
                         </div>
-                        <div class="flex justify-between mt-4">
-                            <button class="flex-1 mr-2 py-2 bg-blue-600 text-white rounded-md text-sm font-medium flex items-center justify-center">
-                                <i class="fas fa-download mr-1"></i> Download
+                        <div class="flex justify-between mt-4 gap-2">
+                            <?php if($download['download_status'] == 'pending'): ?>
+                            <button class="flex-1 py-2 bg-green-600 text-white rounded-md text-sm font-medium flex items-center justify-center" onclick="approvePay('<?php echo $download['payment_id'] ?>')">
+                                <i class="fas fa-check mr-1"></i> Approve
+                            </button>
+                            <?php endif; ?>
+                            <button class="flex-1 py-2 bg-red-600 text-white rounded-md text-sm font-medium flex items-center justify-center" onclick="deleteReport('<?php echo $download['download_id'] ?>', '<?php echo htmlspecialchars($download['title']) ?>')">
+                                <i class="fas fa-trash mr-1"></i> Delete
+                            </button>
+                            <button class="flex-1 py-2 bg-blue-600 text-white rounded-md text-sm font-medium flex items-center justify-center" onclick="viewDetails('<?php echo $download['download_id'] ?>')">
+                                <i class="fas fa-eye mr-1"></i> View
                             </button>
                         </div>
                     </div>
@@ -439,6 +461,7 @@ $downloads_stmt->execute();
             </div>
         </div>
     </div>
+
 <!-- Approval Modal -->
     <div class="modal" id="approvalModal">
         <div class="modal-content">
@@ -477,7 +500,7 @@ $downloads_stmt->execute();
             <button class="modal-close" onclick="closeSuccessModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <p>Payment approved successfully!</p>
+            <p>Action completed successfully!</p>
         </div>
         <div class="modal-footer">
             <button class="control-btn approve-btn" onclick="reloadPage()">OK</button>
@@ -485,34 +508,40 @@ $downloads_stmt->execute();
     </div>
 </div>
 
-
-    <!-- Rejection Modal -->
-    <div class="modal" id="rejectionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Reject Report</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to reject <strong>"Global AI Market Trends 2024"</strong>?</p>
-                <div class="mt-4">
-                    <label for="rejectionReason">Reason for rejection:</label>
-                    <select id="rejectionReason" class="w-full mt-2 p-2 border rounded-md">
-                        <option value="">Select a reason</option>
-                        <option value="Inappropriate content">Inappropriate content</option>
-                        <option value="Low quality">Low quality</option>
-                        <option value="Duplicate">Duplicate report</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <textarea id="rejectionNotes" class="w-full mt-2 p-2 border rounded-md" rows="3" placeholder="Provide additional details..." style="display: none;"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="control-btn cancel-btn" onclick="closeModal()">Cancel</button>
-                <button class="control-btn btn-reject" onclick="confirmReject()">Confirm Rejection</button>
-            </div>
+<!-- View Details Modal -->
+<div class="view-modal" id="viewModal">
+    <div class="view-modal-content">
+        <div class="modal-header">
+            <h3><b>Download Request Details</b></h3>
+            <button class="modal-close" onclick="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="viewModalBody">
+            <!-- Details will be populated here -->
+        </div>
+        <div class="modal-footer">
+            <button class="control-btn approve-btn" onclick="closeViewModal()">Close</button>
         </div>
     </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="delete-modal" id="deleteModal">
+    <div class="delete-modal-content">
+        <div class="modal-header">
+            <h3><b>Confirm Delete</b></h3>
+            <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to delete this download request?</p>
+            <p><strong id="deleteReportTitle"></strong></p>
+            <p class="text-sm text-red-600 mt-2">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="control-btn cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+            <button class="control-btn btn-reject" onclick="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</div>
 
     <script>
         // Mobile menu toggle functionality
@@ -610,7 +639,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 })
 
-
   function approvePay(id) {
             document.getElementById('approvalModal').style.display = 'flex';
             document.getElementById('approvalModal').dataset.id = id;
@@ -618,25 +646,94 @@ document.addEventListener('DOMContentLoaded', ()=>{
  // expose to global
 window.approvePay = approvePay;
 
-        // Function to handle report rejection
-        function rejectReport(id) {
-            document.getElementById('rejectionModal').style.display = 'flex';
+        // Function to handle report deletion
+        function deleteReport(id, title) {
+            document.getElementById('deleteModal').style.display = 'flex';
+            document.getElementById('deleteModal').dataset.id = id;
+            document.getElementById('deleteReportTitle').textContent = title;
         }
         
         // Function to view report details
-        function viewDetails(id) {
-            alert('View details for report ID: ' + id);
+        async function viewDetails(id) {
+            try {
+                const response = await fetch(`${BASE_URL}/fetch/report-details.php?id=${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const details = data.data;
+                    const modalBody = document.getElementById('viewModalBody');
+                    
+                    modalBody.innerHTML = `
+                        <div class="detail-row">
+                            <span class="detail-label">User:</span>
+                            <span class="detail-value">${details.user_name} (${details.email})</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Report Title:</span>
+                            <span class="detail-value">${details.title}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value">${details.category}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">File Type:</span>
+                            <span class="detail-value">${details.file_type || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">File Size:</span>
+                            <span class="detail-value">${details.file_size || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value">${details.download_status}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Transaction ID:</span>
+                            <span class="detail-value">${details.trans_id || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Requested On:</span>
+                            <span class="detail-value">${new Date(details.created_at).toLocaleDateString()}</span>
+                        </div>
+                        ${details.action_date ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Action Date:</span>
+                            <span class="detail-value">${new Date(details.action_date).toLocaleDateString()}</span>
+                        </div>
+                        ` : ''}
+                        ${details.description ? `
+                        <div class="detail-row">
+                            <span class="detail-label">Description:</span>
+                            <span class="detail-value">${details.description}</span>
+                        </div>
+                        ` : ''}
+                    `;
+                    
+                    document.getElementById('viewModal').style.display = 'flex';
+                } else {
+                    alert('Failed to load details: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error loading details:', error);
+                alert('Failed to load details. Please try again.');
+            }
         }
         
-
 function closeModal() {
     document.getElementById('approvalModal').style.display = 'none';
-    document.getElementById('rejectionModal').style.display = 'none';
 }
-
 
 function closeSuccessModal() {
     document.getElementById('successModal').style.display = 'none';
+}
+
+function closeViewModal() {
+    document.getElementById('viewModal').style.display = 'none';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
 }
 
 // Reload page
@@ -644,10 +741,9 @@ function reloadPage() {
     window.location.reload();
 }
 
-
 async function confirmApprove() {
     let payId = document.getElementById('approvalModal');
-    let idVal = payId.dataset.id;  // <-- string UUID
+    let idVal = payId.dataset.id;
 
     try {
         const res = await syncCartItemWithServer2(idVal, 'approve'); // pass string
@@ -660,41 +756,52 @@ async function confirmApprove() {
     }
 }
 
-        
-        // Function to confirm rejection
-        function confirmReject() {
-            alert('Report rejected successfully!');
-            closeModal();
-        }
-        
-        // Show rejection notes when "Other" is selected
-        document.getElementById('rejectionReason').addEventListener('change', function() {
-            const notesField = document.getElementById('rejectionNotes');
-            notesField.style.display = this.value === 'Other' ? 'block' : 'none';
+async function confirmDelete() {
+    let deleteModal = document.getElementById('deleteModal');
+    let idVal = deleteModal.dataset.id;
+
+    try {
+        const response = await fetch(`${BASE_URL}/fetch/downloads.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: await getCurrentUser(),
+                item_id: idVal,
+                action: 'delete'
+            })
         });
+        
+        const data = await response.json();
+        if (data.success) {
+            closeDeleteModal();
+            document.getElementById('successModal').style.display = 'flex';
+        } else {
+            alert('Failed to delete: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete. Please try again.');
+    }
+}
         
         // Close modal if clicked outside
         window.addEventListener('click', function(event) {
             const approvalModal = document.getElementById('approvalModal');
-            const rejectionModal = document.getElementById('rejectionModal');
+            const viewModal = document.getElementById('viewModal');
+            const deleteModal = document.getElementById('deleteModal');
             
             if (event.target === approvalModal) {
                 closeModal();
             }
-            if (event.target === rejectionModal) {
-                closeModal();
+            if (event.target === viewModal) {
+                closeViewModal();
+            }
+            if (event.target === deleteModal) {
+                closeDeleteModal();
             }
         });
-        
-        /*Select all checkboxes
-        document.getElementById('select-all').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.report-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-        });*/
 
-// Sync function
+// Sync function 
 async function syncCartItemWithServer2(itemId, action) {
   try {
     const accountType = document.getElementById('accountType').value;
@@ -710,7 +817,7 @@ async function syncCartItemWithServer2(itemId, action) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: user_id, 
-        item_id: itemId,          // <-- plain string now
+        item_id: itemId,
         action: action,
         account_type: accountType,
         account_no: accountNo
@@ -721,9 +828,8 @@ async function syncCartItemWithServer2(itemId, action) {
     
     const data = await response.json();
     if (!data.success) throw new Error(data.message || 'Sync failed');
-
     console.log("Syncing item:", itemId, "with code:", action);
-    return data; // return something usable
+     return data; // return something usable
   } catch (error) {
     console.error('Cart sync error:', error);
   }

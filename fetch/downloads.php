@@ -5,10 +5,8 @@ header('Content-Type: application/json');
 
 $charset = 'utf8mb4';
 
-
 $input = json_decode(file_get_contents('php://input'), true);
 $id = gen_uuid(); // sets unique ID
-
 
 if (!isset($input['user_id'], $input['item_id'], $input['action'])) {
     http_response_code(400);
@@ -27,7 +25,7 @@ try {
 
         if ($existing) {
             // Update existing record
-            $stmt = $conn->prepare("UPDATE report_downloads  SET download_status = 'pending', download_at = NOW(), last_accessed_at = NOW() WHERE id = :id");
+            $stmt = $conn->prepare("UPDATE report_downloads  SET download_status = 'pending', download_at = NOW(), download_at = NOW() WHERE id = :id");
             $stmt->execute([':id' => $existing['id']]);
         } else {
             // Insert new record
@@ -50,6 +48,24 @@ try {
             ':user_id' => $input['user_id'],
             ':item_id' => $input['item_id']
         ]);
+    } elseif ($input['action'] === 'delete') {
+        // Delete the download request completely
+        $download_id = $input['item_id'];
+        
+        // First delete any associated payments
+        $stmt = $conn->prepare("DELETE FROM payments WHERE trans = (SELECT id FROM report_downloads WHERE id = :download_id)");
+        $stmt->execute([':download_id' => $download_id]);
+        
+        // Then delete the download record
+        $stmt = $conn->prepare("DELETE FROM report_downloads WHERE id = :download_id");
+        $stmt->execute([':download_id' => $download_id]);
+        
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(["success" => true, "message" => "Download request deleted successfully"]);
+        } else {
+            echo json_encode(["success" => false, "message" => "Download request not found"]);
+        }
+        exit;
     }
 
     echo json_encode(["success" => true, "message" => "Sync completed"]);

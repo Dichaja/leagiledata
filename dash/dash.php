@@ -18,7 +18,6 @@ if (isset($_SESSION['user_id'])) {
 // Get user activities
 $activities_stmt = $conn->prepare("SELECT * FROM user_activities WHERE user_id = ? ORDER BY created_at DESC LIMIT 5");
 $activities_stmt->execute([$user_id]);
-//$activities_result = $activities_stmt->fetch(PDO::FETCH_ASSOC);
 
 // Get recommended reports
 $reports_stmt = $conn->prepare("SELECT * FROM reports ORDER BY created_at DESC LIMIT 3");
@@ -32,6 +31,16 @@ $downloads = $downloads_stmt->fetch(PDO::FETCH_ASSOC)['count'];
 $saved_stmt = $conn->prepare("SELECT COUNT(*) as count FROM report_downloads WHERE user_id = ? AND download_status = 'pending'");
 $saved_stmt->execute([$user_id]);
 $saved = $saved_stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+// Get consultation stats
+$consultations_stmt = $conn->prepare("SELECT COUNT(*) as count FROM consultation_requests WHERE user_id = ?");
+$consultations_stmt->execute([$user_id]);
+$consultations = $consultations_stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+// Check if user is an expert
+$expert_stmt = $conn->prepare("SELECT id, status FROM experts WHERE user_id = ?");
+$expert_stmt->execute([$user_id]);
+$expert_profile = $expert_stmt->fetch(PDO::FETCH_ASSOC);
 
 ?>
 <!DOCTYPE html>
@@ -53,7 +62,7 @@ $saved = $saved_stmt->fetch(PDO::FETCH_ASSOC)['count'];
       </div>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <!-- Active Subscription Card -->
         <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
           <div class="flex items-center justify-between">
@@ -72,116 +81,208 @@ $saved = $saved_stmt->fetch(PDO::FETCH_ASSOC)['count'];
         </div>
 
         <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-500">Downloads</p>
-                                <h3 class="text-xl font-bold mt-1"><?php echo $downloads; ?></h3>
-                                <p class="text-sm text-gray-500 mt-1">5 Items</p>
-                            </div>
-                            <div class="bg-green-100 p-3 rounded-full">
-                                <i class="fas fa-download text-green-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <a href="downloads_report.php"><button class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md text-sm font-medium">
-                            View History
-                        </button></a>
-                    </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Downloads</p>
+              <h3 class="text-xl font-bold mt-1"><?php echo $downloads; ?></h3>
+              <p class="text-sm text-gray-500 mt-1">Total Items</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+              <i class="fas fa-download text-green-600 text-xl"></i>
+            </div>
+          </div>
+          <a href="downloads_report.php"><button class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md text-sm font-medium">
+            View History
+          </button></a>
+        </div>
 
         <!-- Saved Reports Card -->
-                    <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-500">Saved Reports</p>
-                                <h3 class="text-xl font-bold mt-1"><?php echo $saved; ?></h3>
-                                <p class="text-sm text-gray-500 mt-1">Last added 2 days ago</p>
-                            </div>
-                            <div class="bg-purple-100 p-3 rounded-full">
-                                <i class="fas fa-bookmark text-purple-600 text-xl"></i>
-                            </div>
-                        </div>
-                        <button class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md text-sm font-medium">
-                            View All
-                        </button>
-                    </div>
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Saved Reports</p>
+              <h3 class="text-xl font-bold mt-1"><?php echo $saved; ?></h3>
+              <p class="text-sm text-gray-500 mt-1">Pending Items</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+              <i class="fas fa-bookmark text-purple-600 text-xl"></i>
+            </div>
+          </div>
+          <button class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md text-sm font-medium">
+            View All
+          </button>
+        </div>
+
+        <!-- Consultations Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Consultations</p>
+              <h3 class="text-xl font-bold mt-1"><?php echo $consultations; ?></h3>
+              <p class="text-sm text-gray-500 mt-1">Total Requests</p>
+            </div>
+            <div class="bg-orange-100 p-3 rounded-full">
+              <i class="fas fa-users text-orange-600 text-xl"></i>
+            </div>
+          </div>
+          <a href="my-consultations.php"><button class="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-md text-sm font-medium">
+            View Consultations
+          </button></a>
+        </div>
+      </div>
+
+      <!-- Expert Section -->
+      <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Expert Services</h2>
+          <a href="<?php echo BASE_URL; ?>/experts.php" class="text-sm font-medium text-blue-600 hover:text-blue-700">Browse All Experts</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Expert Status Card -->
+          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+            <?php if ($expert_profile): ?>
+              <div class="flex items-center mb-4">
+                <div class="bg-blue-100 p-3 rounded-full mr-4">
+                  <i class="fas fa-user-tie text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">Expert Profile</h3>
+                  <p class="text-sm text-gray-600">Status: 
+                    <span class="px-2 py-1 text-xs rounded-full 
+                      <?php echo $expert_profile['status'] === 'approved' ? 'bg-green-100 text-green-800' : 
+                                 ($expert_profile['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); ?>">
+                      <?php echo ucfirst($expert_profile['status']); ?>
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3">
+                <?php if ($expert_profile['status'] === 'approved'): ?>
+                  <a href="expert-dashboard.php" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium text-center">
+                    Expert Dashboard
+                  </a>
+                  <a href="<?php echo BASE_URL; ?>/expert-profile.php?id=<?php echo $expert_profile['id']; ?>" class="flex-1 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 px-4 rounded-md text-sm font-medium text-center">
+                    View Profile
+                  </a>
+                <?php else: ?>
+                  <a href="<?php echo BASE_URL; ?>/expert-registration.php" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium text-center">
+                    Update Application
+                  </a>
+                <?php endif; ?>
+              </div>
+            <?php else: ?>
+              <div class="flex items-center mb-4">
+                <div class="bg-blue-100 p-3 rounded-full mr-4">
+                  <i class="fas fa-graduation-cap text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">Become an Expert</h3>
+                  <p class="text-sm text-gray-600">Share your expertise and earn money</p>
+                </div>
+              </div>
+              <a href="<?php echo BASE_URL; ?>/expert-registration.php" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium text-center block">
+                Apply as Expert
+              </a>
+            <?php endif; ?>
+          </div>
+
+          <!-- Find Experts Card -->
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
+            <div class="flex items-center mb-4">
+              <div class="bg-green-100 p-3 rounded-full mr-4">
+                <i class="fas fa-search text-green-600 text-xl"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">Find Experts</h3>
+                <p class="text-sm text-gray-600">Connect with research specialists</p>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <a href="<?php echo BASE_URL; ?>/experts.php" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium text-center">
+                Browse Experts
+              </a>
+              <a href="my-consultations.php" class="flex-1 bg-white border border-green-600 text-green-600 hover:bg-green-50 py-2 px-4 rounded-md text-sm font-medium text-center">
+                My Requests
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Recent Activity Section -->
-                <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200 mb-8">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-800">Recent Activity</h2>
-                    </div>
-                    <div class="divide-y divide-gray-200">
-                        <?php while ($activity = $activities_stmt->fetch(PDO::FETCH_ASSOC)): ?>
-                            <div class="px-6 py-4 flex items-start">
-                                <?php
-                                $icon_class = '';
-                                $bg_class = '';
-                                switch ($activity['activity_type']) {
-                                    case 'download':
-                                        $icon_class = 'fas fa-download text-blue-600';
-                                        $bg_class = 'bg-blue-100';
-                                        break;
-                                    case 'save':
-                                        $icon_class = 'fas fa-bookmark text-green-600';
-                                        $bg_class = 'bg-green-100';
-                                        break;
-                                    case 'login':
-                                        $icon_class = 'fas fa-share-alt text-purple-600';
-                                        $bg_class = 'bg-purple-100';
-                                        break;
-                                    case 'comment':
-                                        $icon_class = 'fas fa-comment text-yellow-600';
-                                        $bg_class = 'bg-yellow-100';
-                                        break;
-                                    default:
-                                        $icon_class = 'fas fa-circle text-gray-600';
-                                        $bg_class = 'bg-gray-100';
-                                }
-                                ?>
-                                <div class="<?php echo $bg_class; ?> p-2 rounded-full mr-4">
-                                    <i class="<?php echo $icon_class; ?>"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium"><?php echo htmlspecialchars($activity['activity_type']); ?></p>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        <?php echo date('M j, Y g:i A', strtotime($activity['created_at'])); ?>
-                                    </p>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                        
-                    </div>
-                    <div class="px-6 py-3 bg-gray-50 text-right">
-                        <a href="activities.php" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all activity</a>
-                    </div>
-                </div>
-
+      <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200 mb-8">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-800">Recent Activity</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <?php while ($activity = $activities_stmt->fetch(PDO::FETCH_ASSOC)): ?>
+            <div class="px-6 py-4 flex items-start">
+              <?php
+              $icon_class = '';
+              $bg_class = '';
+              switch ($activity['activity_type']) {
+                case 'download':
+                  $icon_class = 'fas fa-download text-blue-600';
+                  $bg_class = 'bg-blue-100';
+                  break;
+                case 'save':
+                  $icon_class = 'fas fa-bookmark text-green-600';
+                  $bg_class = 'bg-green-100';
+                  break;
+                case 'login':
+                  $icon_class = 'fas fa-share-alt text-purple-600';
+                  $bg_class = 'bg-purple-100';
+                  break;
+                case 'comment':
+                  $icon_class = 'fas fa-comment text-yellow-600';
+                  $bg_class = 'bg-yellow-100';
+                  break;
+                default:
+                  $icon_class = 'fas fa-circle text-gray-600';
+                  $bg_class = 'bg-gray-100';
+              }
+              ?>
+              <div class="<?php echo $bg_class; ?> p-2 rounded-full mr-4">
+                <i class="<?php echo $icon_class; ?>"></i>
+              </div>
+              <div>
+                <p class="text-sm font-medium"><?php echo htmlspecialchars($activity['activity_type']); ?></p>
+                <p class="text-xs text-gray-500 mt-1">
+                  <?php echo date('M j, Y g:i A', strtotime($activity['created_at'])); ?>
+                </p>
+              </div>
+            </div>
+          <?php endwhile; ?>
+        </div>
+        <div class="px-6 py-3 bg-gray-50 text-right">
+          <a href="activities.php" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all activity</a>
+        </div>
+      </div>
 
       <!-- Recommended Reports Section -->
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-semibold text-gray-800">Recommended For You</h2>
-                        <a href="reports.php" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all</a>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <?php while ($report = $reports_stmt->fetch(PDO::FETCH_ASSOC)): ?>
-                            <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-                                <div class="h-40 bg-gray-100 flex items-center justify-center">
-                                    <i class="fas fa-chart-line text-4xl text-gray-400"></i>
-                                </div>
-                                <div class="p-4">
-                                    <h3 class="font-semibold text-lg mb-1"><?php echo htmlspecialchars($report['title']); ?></h3>
-                                    <p class="text-sm text-gray-600 mb-3"><?php echo htmlspecialchars($report['description']); ?></p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"><?php echo htmlspecialchars($report['category']); ?></span>
-                                        <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">View</button>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-gray-800">Recommended For You</h2>
+          <a href="reports.php" class="text-sm font-medium text-blue-600 hover:text-blue-700">View all</a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <?php while ($report = $reports_stmt->fetch(PDO::FETCH_ASSOC)): ?>
+            <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+              <div class="h-40 bg-gray-100 flex items-center justify-center">
+                <i class="fas fa-chart-line text-4xl text-gray-400"></i>
+              </div>
+              <div class="p-4">
+                <h3 class="font-semibold text-lg mb-1"><?php echo htmlspecialchars($report['title']); ?></h3>
+                <p class="text-sm text-gray-600 mb-3"><?php echo htmlspecialchars($report['description']); ?></p>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"><?php echo htmlspecialchars($report['category']); ?></span>
+                  <button class="text-sm text-blue-600 hover:text-blue-700 font-medium">View</button>
                 </div>
+              </div>
+            </div>
+          <?php endwhile; ?>
         </div>
       </div>
     </div>
