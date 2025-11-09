@@ -1,7 +1,11 @@
 //new
-async function fetchReports(urlParams) {
+async function fetchReports(urlParams, searchQuery = '') {
   try { 
-    const response = await fetch('fetch/get_reports.php');
+    const url = searchQuery 
+      ? `fetch/get_reports.php?search=${encodeURIComponent(searchQuery)}`
+      : 'fetch/get_reports.php';
+    
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -10,6 +14,11 @@ async function fetchReports(urlParams) {
     const reports = await response.json();
     const container = document.getElementById('report-cards');
     container.innerHTML = ''; // Clear existing
+
+    if (reports.length === 0) {
+      container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No reports found matching your search.</div>';
+      return;
+    }
 
     reports.forEach(report => {
       const card = document.createElement('div');
@@ -369,6 +378,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabParam = urlParams.get('tab');
   const defaultTab = tabParam === 'register' ? 'register' : 'login';
   fetchReports(urlParams);
+  
+  // Search functionality
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        fetchReports(urlParams, e.target.value);
+      }, 300); // Debounce search by 300ms
+    });
+  }
             
             const form = document.getElementById('registration-form');
             const passwordInput = document.getElementById('reg-password');
@@ -607,4 +628,3 @@ function calculatePasswordStrength(password) {
                 return strength;
         }
 });
-

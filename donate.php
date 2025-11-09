@@ -43,7 +43,7 @@ require_once('bin/page_settings.php');
       </div>
 
       <div class="p-6 pt-0">
-        <form>
+        <form id="donationForm">
           <div class="space-y-6">
 
             <!-- Donation Type -->
@@ -130,5 +130,39 @@ require_once('bin/page_settings.php');
 </main>
 <!-- footer section -->
 <?php siteFooter() ?>
+<script>
+    document.getElementById('donationForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Processing...</span>';
+        
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch('fetch/process_donation.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(result.message);
+                this.reset();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            alert('An error occurred. Please try again.');
+            console.error('Error:', error);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+</script>
 </body>
 </html>
