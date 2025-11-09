@@ -205,5 +205,58 @@ require_once('bin/page_settings.php');
 </main>
 <!-- footer section -->
 <?php siteFooter() ?>
+<script>
+    const subscriptionButtons = document.querySelectorAll('.subscribe-btn');
+    
+    subscriptionButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const plan = this.getAttribute('data-plan');
+            const planNames = {
+                'basic': 'Basic Plan',
+                'standard': 'Standard Plan',
+                'premium': 'Premium Plan'
+            };
+            
+            const name = prompt('Enter your full name:');
+            if (!name) return;
+            
+            const email = prompt('Enter your email address:');
+            if (!email) return;
+            
+            const phone = prompt('Enter your phone number (optional):');
+            
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = 'Processing...';
+            
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('phone', phone || '');
+            formData.append('plan', plan);
+            
+            try {
+                const response = await fetch('fetch/process_subscription.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('An error occurred. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                this.disabled = false;
+                this.innerHTML = originalText;
+            }
+        });
+    });
+</script>
 </body>
 </html>
