@@ -23,15 +23,17 @@ function siteHeader(){
                 <!-- Search Bar -->
                 <div class="flex flex-1 max-w-2xl mx-4">
                     <div class="flex w-full">
-                        <select class="bg-gray-100 text-gray-800 border-r-0 rounded-l-md px-3 py-2 text-sm border-gray-300 focus:outline-none focus:ring-1 focus:ring-yellow-500">
-                            <option>All Categories</option>
-                            <option>Technology</option>
-                            <option>Healthcare</option>
-                            <option>Finance</option>
-                            <option>Energy</option>
+                        <select id="search-category" class="bg-gray-100 text-gray-800 border-r-0 rounded-l-md px-3 py-2 text-sm border-gray-300 focus:outline-none focus:ring-1 focus:ring-yellow-500">
+                            <option value="">All Categories</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Energy">Energy</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Education">Education</option>
                         </select>
-                        <input type="text" class="flex-grow px-4 py-2 border-t border-b border-gray-300 focus:outline-none focus:ring-1 focus:ring-yellow-500"  placeholder="Search research reports...">
-                        <button class="bg-yellow-400 hover:bg-yellow-500 px-4 rounded-r-md">
+                        <input type="text" id="header-search-input" class="flex-grow px-4 py-2 border-t border-b border-gray-300 focus:outline-none focus:ring-1 focus:ring-yellow-500"  placeholder="Search research reports...">
+                        <button id="header-search-btn" class="bg-yellow-400 hover:bg-yellow-500 px-4 rounded-r-md">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
@@ -112,8 +114,8 @@ function siteHeader(){
                 <!-- Mobile Search -->
                 <div class="pb-3">
                     <div class="flex w-full">
-                        <input type="text" class="flex-grow px-4 py-2 rounded-l-md border-t border-b border-l border-gray-300 focus:outline-none focus:ring-1 focus:ring-yellow-500" placeholder="Search research reports...">
-                        <button class="bg-yellow-400 hover:bg-yellow-500 px-4 rounded-r-md">
+                        <input type="text" id="mobile-search-input" class="flex-grow px-4 py-2 rounded-l-md border-t border-b border-l border-gray-300 focus:outline-none focus:ring-1 focus:ring-yellow-500" placeholder="Search research reports...">
+                        <button id="mobile-search-btn" class="bg-yellow-400 hover:bg-yellow-500 px-4 rounded-r-md">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
@@ -185,6 +187,52 @@ function siteHeader(){
  </div>
 <?php
 }
+
+// Search endpoint function
+function searchReports($searchQuery = '', $category = '') {
+    require_once(__DIR__ . '/../xsert.php');
+    
+    $sql = "SELECT r.id, r.title, r.author, r.description, r.price, r.thumbnail, r.category, r.download_url, r.file_size, r.file_type,
+            (SELECT COUNT(*) FROM user_activities ua WHERE ua.activity_type = 'download' AND ua.activity_id LIKE CONCAT('%', r.id, '%')) AS download_count
+            FROM reports r WHERE r.status = 'published'";
+    
+    $params = [];
+    $types = '';
+    
+    // Add search condition
+    if (!empty($searchQuery)) {
+        $sql .= " AND (r.title LIKE ? OR r.description LIKE ? OR r.author LIKE ? OR r.category LIKE ?)";
+        $searchParam = '%' . $searchQuery . '%';
+        $params = array_merge($params, [$searchParam, $searchParam, $searchParam, $searchParam]);
+        $types .= 'ssss';
+    }
+    
+    // Add category filter
+    if (!empty($category)) {
+        $sql .= " AND r.category = ?";
+        $params[] = $category;
+        $types .= 's';
+    }
+    
+    $sql .= " ORDER BY r.created_at DESC LIMIT 50";
+    
+    $stmt = $conn->prepare($sql);
+    
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $reports = [];
+    
+    while ($row = $result->fetch_assoc()) {
+        $reports[] = $row;
+    }
+    
+    return $reports;
+}
+?>
 
 function siteHeader_old(){ 
  // Redirect if already logged in
@@ -324,6 +372,68 @@ function siteHeader_old(){
   const userMenuBtn = document.getElementById('userMenuBtn');
   const userDropdown = document.getElementById('userDropdown');
   const carousel = document.getElementById('reportCarousel');
+
+  // Header search functionality
+  const headerSearchInput = document.getElementById('header-search-input');
+  const headerSearchBtn = document.getElementById('header-search-btn');
+  const searchCategory = document.getElementById('search-category');
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  const mobileSearchBtn = document.getElementById('mobile-search-btn');
+
+  function performSearch(searchQuery, category = '') {
+      const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+      let url = baseUrl + 'categories.php';
+      const params = new URLSearchParams();
+      
+      if (searchQuery) params.append('search', searchQuery);
+      if (category) params.append('category', category);
+      
+      if (params.toString()) {
+          url += '?' + params.toString();
+      }
+      
+      window.location.href = url;
+  }
+
+  // Desktop search
+  if (headerSearchBtn && headerSearchInput) {
+      headerSearchBtn.addEventListener('click', () => {
+          const query = headerSearchInput.value.trim();
+          const category = searchCategory ? searchCategory.value : '';
+          if (query || category) {
+              performSearch(query, category);
+          }
+      });
+
+      headerSearchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+              const query = headerSearchInput.value.trim();
+              const category = searchCategory ? searchCategory.value : '';
+              if (query || category) {
+                  performSearch(query, category);
+              }
+          }
+      });
+  }
+
+  // Mobile search
+  if (mobileSearchBtn && mobileSearchInput) {
+      mobileSearchBtn.addEventListener('click', () => {
+          const query = mobileSearchInput.value.trim();
+          if (query) {
+              performSearch(query);
+          }
+      });
+
+      mobileSearchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+              const query = mobileSearchInput.value.trim();
+              if (query) {
+                  performSearch(query);
+              }
+          }
+      });
+  }
 
   // Nav menu toggle
   if (menuToggleBtn && mobileMenu) {
