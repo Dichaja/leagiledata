@@ -233,135 +233,7 @@ function searchReports($searchQuery = '', $category = '') {
     return $reports;
 }
 ?>
-
-function siteHeader_old(){ 
- // Redirect if already logged in
- $user_id = $_SESSION['user_id'] ?? '';
- $user_name = $_SESSION['user_name'] ?? '';
- $user_email = $_SESSION['user_email'] ?? '';
-?>
-<header class="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-[#333]">
-  <div class="container flex h-20 items-center justify-between px-4 md:px-6">
-
-    <!-- Logo -->
-    <a class="flex items-center space-x-2" href="<?php echo BASE_URL ?>/index.php">
-      <div class="h-8 w-14 flex items-center justify-center">
-        <img src="img_data/logo.jpg" alt="Research Center Logo" class="h-10 w-auto">
-      </div>
-      <div class="hidden md:flex flex-col">
-        <span class="font-bold text-xl">Leagile Research Data Center</span>
-        <span class="text-muted-slogan">The source of research Data</span>
-      </div>
-    </a>
-
-    <!-- Mobile Menu Toggle -->
-    <button id="menuToggleBtn" type="button"
-      class="inline-flex items-center justify-center h-9 w-9 rounded-md md:hidden hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-ring">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-        stroke-width="2">
-        <line x1="4" x2="20" y1="6" y2="6"></line>
-        <line x1="4" x2="20" y1="12" y2="12"></line>
-        <line x1="4" x2="20" y1="18" y2="18"></line>
-      </svg>
-    </button>
-
-    <!-- Desktop Navigation -->
-    <nav class="hidden md:flex items-center space-x-6">
-      <a href="index.php" class="text-sm font-medium hover:text-primary transition-colors">Home</a>
-      <a href="categories.php" class="text-sm font-medium hover:text-primary transition-colors">Categories</a>
-      <a href="experts.php" class="text-sm font-medium hover:text-primary transition-colors">Experts</a>
-      <a href="subscriptions.php" class="text-sm font-medium hover:text-primary transition-colors">Subscription Plans</a>
-      <a href="<?php echo BASE_URL ?>/donate.php" class="text-sm font-medium hover:text-primary transition-colors">Donation</a>
-      <a href="services.php" class="text-sm font-medium hover:text-primary transition-colors">Services</a>
-    </nav>
-
-    <!-- Actions -->
-    <div class="flex items-center space-x-4">
-      <!-- Cart -->
-      <a href="<?php echo BASE_URL ?>/cart.php" class="relative">
-        <button
-          class="inline-flex items-center justify-center h-9 w-9 rounded-md hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-ring">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-            <path d="M3 6h18" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
-          </svg>
-          <div id="cart-count" class="rounded-md border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80 absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"></div>
-        </button>
-      </a>
-      <?php if($user_name){ ?>
-            <div class="flex items-center space-x-4">
-                <!-- User Profile -->
-                <div class="relative">
-                    <button id="userMenuBtn" class="flex items-center space-x-2 focus:outline-none">
-                        <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
-                            <?php echo strtoupper(substr($user_name, 0, 1)); ?>
-                        </div>
-                        <span class="hidden md:block text-sm font-medium"><?php echo htmlspecialchars($user_name); ?></span>
-                    </button>
-                    
-                    <!-- User Dropdown Menu -->
-                    <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200"> 
-                        <div class="px-4 py-2 border-b">
-                            <p class="text-sm font-medium"><?php echo htmlspecialchars($user_name); ?></p>
-                            <p class="text-xs text-gray-500"><?php echo htmlspecialchars($user_email); ?></p>
-                        </div>
-                        <a href="dashboard.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</a>
-                        <a href="profile.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                        <a href="subscriptions.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Subscriptions</a>
-                        <a href="settings.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-                        <div class="border-t"></div>
-                        <a href="logout.php" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
-                    </div>
-                </div>
-      <?php } else { ?>
-      <!-- Desktop Auth -->
-      <div class="hidden md:flex items-center space-x-2">
-        <a href="<?php echo BASE_URL ?>/login.php?tab=login">
-          <button class="items-center justify-center h-8 px-3 rounded-md text-xs font-medium hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-ring">Login</button>
-        </a>
-        <a href="<?php echo BASE_URL ?>/login.php?tab=register">
-          <button class="items-center justify-center h-8 px-3 rounded-md text-xs font-medium bg-primary text-primary-foreground shadow hover:bg-primary/90 focus:outline-none focus:ring-1 focus:ring-ring">Register</button>
-        </a>
-      </div>
-
-     <!--Mobile Auth Toggle-->
-      <div class="relative md:hidden">
-        <button id="authToggleBtn" type="button" class="inline-flex items-center justify-center h-9 w-9 rounded-md hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-ring">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor" stroke-width="2">
-            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </button>
-
-      <!--Auth Dropdown--> 
-        <div id="authDropdown"
-          class="hidden absolute right-0 mt-2 w-40 bg-background border rounded-md shadow-md p-2 z-50">
-          <a href="<?php echo BASE_URL ?>/login" class="block w-full px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground rounded-md">Login</a>
-          <a href="<?php echo BASE_URL ?>/register" class="block w-full px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-center">Register</a>
-        </div>
-      </div>
-    <?php } ?>
-        </div>
-    </div>
-
-  </div>
-</header>
-
-<!-- Mobile Menu -->
-<div id="mobileMenu" class="hidden md:hidden fixed top-20 inset-x-0 bg-background z-40 border-t shadow-md p-4 space-y-3">
-  <nav class="flex flex-col space-y-2">
-    <a href="index.php" class="text-sm font-medium hover:text-primary transition-colors">Home</a>
-    <a href="categories.php" class="text-sm font-medium hover:text-primary transition-colors">Categories</a>
-    <a href="experts.php" class="text-sm font-medium hover:text-primary transition-colors">Experts</a>
-    <a href="subscriptions.php" class="text-sm font-medium hover:text-primary transition-colors">Subscription Plans</a>
-    <a href="<?php echo BASE_URL ?>/donate.php" class="text-sm font-medium hover:text-primary transition-colors">Donation</a>
-    <a href="services.php" class="text-sm font-medium hover:text-primary transition-colors">Services</a>
-  </nav>
-</div>
-
-<!-- JS: Menu + Auth Dropdown Toggle -->
+<!-- JS: Menu + Auth Dropdown Toggle 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
   // Element references
@@ -373,68 +245,7 @@ function siteHeader_old(){
   const userDropdown = document.getElementById('userDropdown');
   const carousel = document.getElementById('reportCarousel');
 
-  // Header search functionality
-  const headerSearchInput = document.getElementById('header-search-input');
-  const headerSearchBtn = document.getElementById('header-search-btn');
-  const searchCategory = document.getElementById('search-category');
-  const mobileSearchInput = document.getElementById('mobile-search-input');
-  const mobileSearchBtn = document.getElementById('mobile-search-btn');
-
-  function performSearch(searchQuery, category = '') {
-      const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
-      let url = baseUrl + 'categories.php';
-      const params = new URLSearchParams();
-      
-      if (searchQuery) params.append('search', searchQuery);
-      if (category) params.append('category', category);
-      
-      if (params.toString()) {
-          url += '?' + params.toString();
-      }
-      
-      window.location.href = url;
-  }
-
-  // Desktop search
-  if (headerSearchBtn && headerSearchInput) {
-      headerSearchBtn.addEventListener('click', () => {
-          const query = headerSearchInput.value.trim();
-          const category = searchCategory ? searchCategory.value : '';
-          if (query || category) {
-              performSearch(query, category);
-          }
-      });
-
-      headerSearchInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-              const query = headerSearchInput.value.trim();
-              const category = searchCategory ? searchCategory.value : '';
-              if (query || category) {
-                  performSearch(query, category);
-              }
-          }
-      });
-  }
-
-  // Mobile search
-  if (mobileSearchBtn && mobileSearchInput) {
-      mobileSearchBtn.addEventListener('click', () => {
-          const query = mobileSearchInput.value.trim();
-          if (query) {
-              performSearch(query);
-          }
-      });
-
-      mobileSearchInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-              const query = mobileSearchInput.value.trim();
-              if (query) {
-                  performSearch(query);
-              }
-          }
-      });
-  }
-
+  
   // Nav menu toggle
   if (menuToggleBtn && mobileMenu) {
     menuToggleBtn.addEventListener('click', () => {
@@ -478,11 +289,9 @@ function siteHeader_old(){
   }
 });
 
-</script>
+</script>-->
 
-
-
-<?php } 
+<?php 
 function siteFooter(){
 ?>
 <footer class="bg-slate-900 text-white py-12 w-full">

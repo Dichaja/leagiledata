@@ -20,7 +20,7 @@ class Mailer
         string $to,
         string $subject,
         string $content,
-        string $fromName = 'Zzimba Online'
+        string $fromName = 'Leagile Research'
     ): bool {
         $smtpConfigurations = [
             [
@@ -40,10 +40,10 @@ class Mailer
 
             try {
                 $mail->isSMTP();
-                $mail->Host       = 'mail.zzimbaonline.com';
+                $mail->Host       = 'mail.leagileresearch.com';
                 $mail->SMTPAuth   = true;
-                $mail->Username   = 'no-reply@zzimbaonline.com';
-                $mail->Password   = 'Martie@4728##';
+                $mail->Username   = 'info@leagileresearch.com';
+                $mail->Password   = "kxEu,mfG({}x";
 
                 $mail->SMTPSecure = $config['SMTPSecure'];
                 $mail->Port       = $config['Port'];
@@ -56,7 +56,7 @@ class Mailer
                     ],
                 ];
 
-                $mail->setFrom('no-reply@zzimbaonline.com', $fromName);
+                $mail->setFrom('info@leagileresearch.com', $fromName);
                 $mail->addAddress($to);
 
                 $mail->isHTML(true);
@@ -84,10 +84,10 @@ class Mailer
                         
                         <!-- Call to Action -->
                         <div style="background-color: #f9fafb; padding: 0 30px; text-align: center; border-top: 1px solid #f3f4f6;">
-                            <a href="https://zzimbaonline.com" style="display: inline-block; padding: 10px 24px; background-color: #D92B13; color: #ffffff; text-decoration: none; font-weight: 500; border-radius: 4px; font-size: 15px;">Visit Our Website</a>
+                            <a href="https://leagileresearch.com" style="display: inline-block; padding: 10px 24px; background-color: #D92B13; color: #ffffff; text-decoration: none; font-weight: 500; border-radius: 4px; font-size: 15px;">Visit Our Website</a>
                         </div>
                         
-                        <!-- Social Media -->
+                        <!-- Social Media 
                         <div style="padding: 0 30px; text-align: center; background-color: #ffffff; border-bottom: 1px solid #f3f4f6;">
                             <p style="margin-bottom: 15px; font-size: 15px; color: #6b7280; font-weight: 500;">Connect With Us</p>
                             <div>
@@ -104,16 +104,16 @@ class Mailer
                                     <img src="https://cdn-icons-png.flaticon.com/128/3536/3536505.png" alt="LinkedIn" style="width: 24px; height: 24px;">
                                 </a>
                             </div>
-                        </div>
+                        </div>-->
                         
                         <!-- Footer -->
                         <div style="padding: 0 30px; text-align: center; background-color: #f9fafb; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px;">
                             <div style="margin-bottom: 15px; font-size: 14px; color: #6b7280; line-height: 1.6;">
-                                <p style="margin: 5px 0;">Phone: +256 392 003-406</p>
+                                <p style="margin: 5px 0;">Phone: +256 701 333967, +256 779 231086</p>
                                 <p style="margin: 5px 0;">Email: info@zzimbaonline.com</p>
                             </div>
                             <div style="font-size: 13px; color: #9ca3af; padding-top: 15px; border-top: 1px solid #e5e7eb;">
-                                <p style="margin: 5px 0;">&copy; ${currentYear} Zzimba Online. All rights reserved.</p>
+                                <p style="margin: 5px 0;">&copy; ${currentYear} Leagile Research. All rights reserved.</p>
                                 <p style="margin: 8px 0;">
                                     <a href="https://zzimbaonline.com/terms-and-conditions" style="color: #6b7280; text-decoration: none; margin: 0 8px;">Terms of Service</a>
                                 </p>

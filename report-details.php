@@ -169,7 +169,17 @@ require_once('bin/page_settings.php');
                             </svg>
                             Download Now
                         </button>
-                        
+                        <!-- Optimized direct checkout button -->
+                        <form method="get" action="checkout.php">
+                            <input type="hidden" name="report_id" id="checkout-report-id" value="">
+                            <button type="submit" id="proceed-checkout-btn" class="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors mt-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6 9l6 6 6-6"/>
+                                </svg>
+                                Proceed to Checkout
+                            </button>
+                        </form>
+
                         <button id="add-to-cart-btn" class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="8" cy="21" r="1"></circle>
@@ -179,6 +189,17 @@ require_once('bin/page_settings.php');
                             Add to Cart
                         </button>
                     </div>
+<script>
+// Set the report_id value for the checkout form
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const reportId = urlParams.get('id');
+    const checkoutInput = document.getElementById('checkout-report-id');
+    if (checkoutInput && reportId) {
+        checkoutInput.value = reportId;
+    }
+});
+</script>
                     
                     <div class="mt-4 text-sm text-gray-500">
                         <p>Formats available: <span id="file-format">Loading...</span></p>
@@ -435,7 +456,7 @@ function handleDownload(itemId) {
 
     localStorage.setItem('cart', JSON.stringify([item]));
     localStorage.setItem('directDownload', 'true');
-    window.location.href = 'checkout.php';
+    window.location.href = `checkout.php?report_id=${encodeURIComponent(downloadBtn.dataset.id)}&amount=${encodeURIComponent(parseFloat(downloadBtn.dataset.price))}&action_type=report`;
   }
 }
 

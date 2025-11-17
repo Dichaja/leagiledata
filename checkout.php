@@ -326,15 +326,15 @@ require __DIR__ . '/xsert.php';
                 <div class="tab-content" id="mobile-money">
                     <div class="info-box">
                         <h3 class="info-title">Send Payment to Mobile Account:</h3>
-                        <div class="info-item">
+                        <div class="info-item account">
                             <span class="info-label">Account Name:</span>
                             <span class="info-value">Mbago Musa</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item account">
                             <span class="info-label">Operator:</span>
                             <span class="info-value">Airtel Ug</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item account">
                             <span class="info-label">Account Number:</span>
                             <span class="info-value">(+256) 701 339 667</span>
                         </div>
@@ -371,19 +371,19 @@ require __DIR__ . '/xsert.php';
                     
                     <div class="info-box">
                         <h3 class="info-title">Please transfer the payment to:</h3>
-                        <div class="info-item">
+                        <div class="info-item account">
                             <span class="info-label">Bank Name:</span>
                             <span class="info-value">KCB - Kenya Commercial Bank</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item account" >
                             <span class="info-label">Account Name:</span>
                             <span class="info-value">Mbago Musa</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item account">
                             <span class="info-label">Account Number:</span>
                             <span class="info-value">2329505574</span>
                         </div>
-                        <div class="info-item">
+                        <div class="info-item account">
                             <span class="info-label">SWIFT/BIC:</span>
                             <span class="info-value">KCBLUKAXXX</span>
                         </div>
@@ -423,7 +423,48 @@ require __DIR__ . '/xsert.php';
         <div class="flex flex-col space-y-1.5 p-6">
           <h3 class="font-semibold leading-none tracking-tight">Order Summary</h3>
         </div>
-        <div id="order-summary" class="p-6 pt-0"></div>
+        <div id="order-summary" class="p-6 pt-0">
+        <?php
+        // Multipurpose order summary: donation or report
+        function renderCartItem($conn) {
+            $isDonation = isset($_GET['donation_id']);
+            $isReport = isset($_GET['report_id']);
+            if ($isDonation) {
+                $donation_id = $_GET['donation_id'];
+                $stmt = $conn->prepare("SELECT donor_name, donor_email, amount, created_at FROM donations WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $donation_id]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($row) {
+                    echo '<div class="space-y-1">';
+                    echo '<div class="flex justify-between"><span class="text-muted-foreground">Donation by</span><span>' . htmlspecialchars($row['donor_name']) . '</span></div>';
+                    echo '<div class="flex justify-between"><span class="text-muted-foreground">Email</span><span>' . htmlspecialchars($row['donor_email']) . '</span></div>';
+                    echo '<div class="flex justify-between"><span class="text-muted-foreground">Date</span><span>' . htmlspecialchars($row['created_at']) . '</span></div>';
+                    echo '<div class="flex justify-between font-medium text-lg"><span>Donation Amount</span><span>$' . number_format($row['amount'], 2) . '</span></div>';
+                    echo '</div>';
+                } else {
+                    echo '<div class="text-red-600">Donation not found.</div>';
+                }
+            } elseif ($isReport) {
+                $report_id = $_GET['report_id'];
+                $stmt = $conn->prepare("SELECT title, price, created_at FROM reports WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $report_id]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($row) {
+                    echo '<div class="space-y-1">';
+                    echo '<div class="flex justify-between"><span class="text-muted-foreground">Report</span><span>' . htmlspecialchars($row['title']) . '</span></div>';
+                    echo '<div class="flex justify-between"><span class="text-muted-foreground">Date</span><span>' . htmlspecialchars($row['created_at']) . '</span></div>';
+                    echo '<div class="flex justify-between font-medium text-lg"><span>Price</span><span>$' . number_format($row['price'], 2) . '</span></div>';
+                    echo '</div>';
+                } else {
+                    echo '<div class="text-red-600">Report not found.</div>';
+                }
+            } else {
+                echo '<div class="text-gray-500">No order found. Please start from the donation or report page.</div>';
+            }
+        }
+        renderCartItem($conn);
+        ?>
+        </div>
       </div>
       </div>
       <!-- Terms -->
@@ -443,10 +484,23 @@ require __DIR__ . '/xsert.php';
 
   </div>
 </main>
-<!-- footer section -->
+<!-- Payment Confirmation Popup -->
+<div id="payment-confirm-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; max-width:95vw; width:370px; margin:auto; padding:2rem; box-shadow:0 8px 32px rgba(0,0,0,0.18); text-align:center;">
+        <h2 style="font-size:1.2rem; font-weight:600; margin-bottom:1rem;">Confirm Your Payment</h2>
+        <div style="margin-bottom:1rem;">
+            <div><strong>Payment Method:</strong> <span id="modal-payment-method"></span></div>
+            <div class="account" id="modal-account-details" style="margin:0.5rem 0 1rem 0; background:#f8fafc; border-radius:8px; padding:0.75rem; text-align:left; font-size:0.97em;"></div>
+            <div><strong>Prompt Code:</strong> <span id="modal-prompt-code" style="font-family:monospace;"></span></div>
+            <div><strong>Item Cost:</strong> <span id="modal-item-cost"></span></div>
+        </div>
+        <button id="modal-confirm-btn" style="background:#1890ff; color:#fff; border:none; border-radius:6px; padding:0.5rem 1.5rem; font-weight:500; margin-right:0.5rem;">Confirm</button>
+        <button id="modal-cancel-btn" style="background:#eee; color:#333; border:none; border-radius:6px; padding:0.5rem 1.5rem; font-weight:500;">Cancel</button>
+    </div>
+</div>
 <?php siteFooter() ?>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
   // Tab switching functionality
             const tabButtons = document.querySelectorAll('.tab-button');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -477,48 +531,107 @@ require __DIR__ . '/xsert.php';
             // Mobile money code generation
             const mobileGenerateBtn = document.getElementById('mobile-generate-btn');
             const mobileCodeInput = document.getElementById('mobile-code-input');
-            
-            mobileGenerateBtn.addEventListener('click', () => {
-                const generatedCode = generateTransactionCode();
-                mobileCodeInput.value = generatedCode;
-                
-                // Visual feedback
-                const originalHtml = mobileGenerateBtn.innerHTML;
-                mobileGenerateBtn.innerHTML = '<i class="fas fa-check"></i> <span class="text">Code Generated</span>';
-                mobileGenerateBtn.style.background = '#52c41a';
-                
-                setTimeout(() => {
-                    mobileGenerateBtn.innerHTML = originalHtml;
-                    mobileGenerateBtn.style.background = '';
-                    cart.forEach(item => {
-                        syncCartItemWithServer(item, generatedCode);
-                      });
-                }, 2000);
-            });
-            
-            // Bank transfer code generation
             const bankGenerateBtn = document.getElementById('bank-generate-btn');
             const bankCodeInput = document.getElementById('bank-code-input');
-            
 
-            bankGenerateBtn.addEventListener('click', () => {
-                bankCodeInput.value = generateTransactionCode();
-                const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            // Modal elements
+            const paymentModal = document.getElementById('payment-confirm-modal');
+            const modalPaymentMethod = document.getElementById('modal-payment-method');
+            const modalPromptCode = document.getElementById('modal-prompt-code');
+            const modalPay = document.getElementById('modal-pay-details');
+            const modalItemCost = document.getElementById('modal-item-cost');
+            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
 
-                // Visual feedback
-                const originalHtml = bankGenerateBtn.innerHTML;
-                bankGenerateBtn.innerHTML = '<i class="fas fa-check"></i> <span class="text">Code Generated</span>';
-                bankGenerateBtn.style.background = '#52c41a';
-                
-                setTimeout(() => {
-                    bankGenerateBtn.innerHTML = originalHtml;
-                    bankGenerateBtn.style.background = '';
-                    cart.forEach(item => {
-                        syncCartItemWithServer(item, bankCodeInput.value);
-                      });
-                }, 2000);
+            // Helper to get item cost from order summary
+            function getItemCost() {
+                const orderSummary = document.getElementById('order-summary');
+                if (!orderSummary) return '';
+                // Try to find the last .font-medium.text-lg span (the amount)
+                const priceSpan = orderSummary.querySelector('.font-medium.text-lg span:last-child');
+                return priceSpan ? priceSpan.textContent : '';
+            }
 
-                
+            function showPaymentModal(method, code) {
+                modalPaymentMethod.textContent = method;
+                modalPromptCode.textContent = code;
+                modalItemCost.textContent = getItemCost();
+                // Set account details
+                const accountDiv = document.getElementById('modal-account-details');
+                if (method === 'Mobile Money') {
+                    accountDiv.innerHTML = `
+                        <div><strong>Account Name:</strong> Mbago Musa</div>
+                        <div><strong>Operator:</strong> Airtel Ug</div>
+                        <div><strong>Account Number:</strong> (+256) 701 339 667</div>
+                    `;
+                } else if (method === 'Bank Transfer') {
+                    accountDiv.innerHTML = `
+                        <div><strong>Bank Name:</strong> KCB - Kenya Commercial Bank</div>
+                        <div><strong>Account Name:</strong> Mbago Musa</div>
+                        <div><strong>Account Number:</strong> 2329505574</div>
+                        <div><strong>SWIFT/BIC:</strong> KCBLUKAXXX</div>
+                        <div><strong>Address:</strong> Forest Mall, Nakawa Kampala</div>
+                    `;
+                } else {
+                    accountDiv.innerHTML = '';
+                }
+                paymentModal.style.display = 'flex';
+            }
+            function hidePaymentModal() {
+                paymentModal.style.display = 'none';
+            }
+
+            // Mobile money handler
+            mobileGenerateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const generatedCode = generateTransactionCode();
+                showPaymentModal('Mobile Money', generatedCode);
+
+                // On confirm, fill input and do original logic
+                modalConfirmBtn.onclick = function() {
+                    mobileCodeInput.value = generatedCode;
+                    hidePaymentModal();
+                    // Visual feedback
+                    const originalHtml = mobileGenerateBtn.innerHTML;
+                    mobileGenerateBtn.innerHTML = '<i class="fas fa-check"></i> <span class="text">Code Generated</span>';
+                    mobileGenerateBtn.style.background = '#52c41a';
+                    setTimeout(() => {
+                        mobileGenerateBtn.innerHTML = originalHtml;
+                        mobileGenerateBtn.style.background = '';
+                        cart.forEach(item => {
+                            syncCartItemWithServer(item, generatedCode);
+                        });
+                    }, 2000);
+                };
+                modalCancelBtn.onclick = function() {
+                    hidePaymentModal();
+                };
+            });
+
+            // Bank transfer handler
+            bankGenerateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const generatedCode = generateTransactionCode();
+                showPaymentModal('Bank Transfer', generatedCode);
+
+                modalConfirmBtn.onclick = function() {
+                    bankCodeInput.value = generatedCode;
+                    hidePaymentModal();
+                    // Visual feedback
+                    const originalHtml = bankGenerateBtn.innerHTML;
+                    bankGenerateBtn.innerHTML = '<i class="fas fa-check"></i> <span class="text">Code Generated</span>';
+                    bankGenerateBtn.style.background = '#52c41a';
+                    setTimeout(() => {
+                        bankGenerateBtn.innerHTML = originalHtml;
+                        bankGenerateBtn.style.background = '';
+                        cart.forEach(item => {
+                            syncCartItemWithServer(item, generatedCode);
+                        });
+                    }, 2000);
+                };
+                modalCancelBtn.onclick = function() {
+                    hidePaymentModal();
+                };
             });
             
             // Allow clicking on the input to generate code as well
@@ -530,43 +643,12 @@ require __DIR__ . '/xsert.php';
                 bankGenerateBtn.click();
             });
 
-  renderCartItem(cart);
+    // JS cart rendering removed: now handled by PHP for this page
 
   });
 
  
-function renderCartItem(cart) {
-  
-  const summaryContainer = document.getElementById('order-summary');
-  
-  if (summaryContainer) {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price), 0);
-    //const tax = subtotal * 0.08;
-    const total = subtotal;
-    
-    // Format numbers with commas for thousands and 2 decimal places
-    const formatCurrency = (num) => {
-      return num.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    };
-    
-   summaryContainer.innerHTML = `<div class="space-y-1">
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Subtotal</span>
-          <span>$${formatCurrency(subtotal)}</span>
-        </div>        
-        <!-- Separator -->
-        <div class="shrink-0 bg-border h-[1px] w-full my-2"></div>
-        
-        <div class="flex justify-between font-medium text-lg">
-          <span>Total</span>
-          <span>$${formatCurrency(total)}</span>
-        </div>
-      </div>`;
-  }
-}
+// function renderCartItem(cart) { /* removed: now handled by PHP */ }
 
 function handleDirectDownload() {
   if (localStorage.getItem('directDownload') === 'true') {
@@ -585,7 +667,9 @@ function handleDirectDownload() {
 // Sync function
 async function syncCartItemWithServer(item, action) {
   try {
-
+    const urlParams = new URLSearchParams(window.location.search);
+    const getType = urlParams.get('action_type');
+    const donate_id = urlParams.get('donation_id');
     // First get user ID
     const user_id = await getCurrentUserId();
     if (!user_id) {
@@ -598,7 +682,9 @@ async function syncCartItemWithServer(item, action) {
       body: JSON.stringify({
         user_id: user_id, 
         item_id: item.id,
-        action: action
+        action: action,
+        actionType: getType,
+        donate: donate_id
       })
     });
     

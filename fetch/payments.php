@@ -10,7 +10,7 @@ header('Content-Type: application/json');
 $input = json_decode(file_get_contents('php://input'), true);
 $id = gen_uuid();
 
-if (!isset($input['user_id'], $input['item_id'], $input['action'])) {
+if (!isset($input['user_id'], $input['item_id'], $input['action'], $input['actionType'], $input['donate'])) {
     http_response_code(400);
     echo json_encode(["error" => "Missing required fields"]);
     exit;
@@ -40,13 +40,47 @@ try {
 
     } elseif (strpos($input['action'], 'TXN') === 0) {
         // This is a transaction code generation - send SMS notification
-        
-        // Get user details
-        $stmt = $conn->prepare("SELECT usr_name, email FROM users WHERE id = :user_id");
-        $stmt->execute([':user_id' => $input['user_id']]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($user) {
+        session_start();
+        $activeUserId = $_SESSION['user_id'] ?? null;
+        $activeUserName = $_SESSION['user_name'] ?? '';
+        $activeUserEmail = $_SESSION['user_email'] ?? '';
+        $category = 'Report Download';
+        $smsAmount = '';
+        $smsItems = 1;
+        if ($input['actionType'] == 'donate') {
+            
+            try{
+                $donation_id = $input['donate'];
+                $stmt = $conn->prepare("SELECT id, donor_name, donor_email, amount FROM donations WHERE id = :id ");
+                $stmt->execute([':id' => $donation_id]);
+                $donation = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$donation) {
+                            throw new Exception("Donation not found for ID: $donation_id");
+                }
+            if ($donation) {
+                $category = 'Donation';
+                $smsAmount = number_format($donation['amount'], 2);
+                $activeUserName = $donation['donor_name'];
+                $activeUserEmail = $donation['donor_email'];
+                $stmt = $conn->prepare("INSERT INTO payments (id, trans, trans_id, acc_frm, acc_paid_to, pay_status, created_at, updated_at) VALUES (:id, :trans, :trans_id, '', '', '00', NOW(), NOW())");
+
+                $success = $stmt->execute([
+                     ':id' => gen_uuid(),
+                     ':trans' => $donation['id'],
+                     ':trans_id' => $input['action']
+                 ]);
+
+    if (!$success) {
+        throw new Exception("Failed to insert payment record");
+    }
+
+    echo json_encode(["success" => true, "message" => "Donation payment recorded"]);
+               }
+            }catch(Exception $e){
+                echo json_encode(["error" => "Donate Error: " . $e->getMessage()]);
+            }
+        } else if(($input['actionType'] == 'report')) {
             // Get cart items for this user to calculate total
             $stmt = $conn->prepare("
                 SELECT rd.*, r.title, r.price 
@@ -54,47 +88,25 @@ try {
                 JOIN reports r ON rd.item_id = r.id 
                 WHERE rd.user_id = :user_id AND rd.download_status = 'pending'
             ");
-            $stmt->execute([':user_id' => $input['user_id']]);
+            $stmt->execute([':user_id' => $activeUserId]);
             $cart_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            $total_amount = 0;
-            $items_count = count($cart_items);
-            
+            $smsAmount = 0;
+            $smsItems = count($cart_items);
             foreach ($cart_items as $item) {
-                $total_amount += $item['price'];
+                $smsAmount += $item['price'];
             }
-            
-            // Send SMS notification to admin
-            $sms_result = sendPaymentAlertSMS(
-                $user['usr_name'],
-                $user['email'],
-                $input['action'], // This is the transaction code
-                number_format($total_amount, 2),
-                $items_count
-            );
-            
-            // Log SMS activity
-            logSMSActivity(
-                '256773089254',
-                "Payment alert for user: " . $user['usr_name'],
-                $sms_result['success'] ? 'sent' : 'failed',
-                $sms_result
-            );
-            
             // Update or insert payment record with transaction code
-            $stmt = $conn->prepare("SELECT id FROM report_downloads WHERE user_id = :user_id AND item_id = :item_id");
+            $stmt = $conn->prepare("SELECT id, item_price FROM report_downloads WHERE user_id = :user_id AND item_id = :item_id");
             $stmt->execute([
-                ':user_id' => $input['user_id'],
+                ':user_id' => $activeUserId,
                 ':item_id' => $input['item_id']
             ]);
             $qryReport = $stmt->fetch(PDO::FETCH_ASSOC);
-
             if ($qryReport) {
                 // Check if payment record exists
                 $stmt = $conn->prepare("SELECT id FROM payments WHERE trans = :trans");
                 $stmt->execute([':trans' => $qryReport['id']]);
                 $existing_payment = $stmt->fetch(PDO::FETCH_ASSOC);
-                
                 if ($existing_payment) {
                     // Update existing payment with transaction code
                     $stmt = $conn->prepare("UPDATE payments SET trans_id = :trans_id, updated_at = NOW() WHERE trans = :trans");
@@ -104,6 +116,7 @@ try {
                     ]);
                 } else {
                     // Insert new payment record
+                    $smsAmount = $qryReport['item_price'];
                     $stmt = $conn->prepare("INSERT INTO payments 
                         (id, trans, trans_id, acc_frm, acc_paid_to, pay_status, created_at, updated_at) 
                         VALUES (:id, :trans, :trans_id, '', '', '00', NOW(), NOW())");
@@ -115,6 +128,16 @@ try {
                 }
             }
         }
+        //Send SMS notification to admin (general, with category)
+        $sms_result = sendPaymentAlertSMS($activeUserEmail, $input['action'], $smsAmount, $category);
+        
+        // Log SMS activity
+        logSMSActivity(
+            '256773089254',
+            "Payment alert for user: $activeUserName ($category)",
+            $sms_result['status'],
+            $sms_result
+        );
 
     } elseif ($input['action'] === 'approve') {
 

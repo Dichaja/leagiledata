@@ -56,15 +56,20 @@ function sendSMSNotification($message, $phone_number) {
     );
   }*/
 
-  echo $result;
+  //echo $status;
+  return [
+      'success' => ($result !== false),
+      'status' => $status,
+      'provider_response' => $result
+  ];
 }
 
-function sendPaymentAlertSMS($user_name, $user_email, $transaction_code, $total_amount, $items_count) {
+function sendPaymentAlertSMS($user_email, $transaction_code, $total_amount, $category) {
     $message = "PAYMENT ALERT\n";
     $message .= "Email: {$user_email}\n";
     $message .= "Code: {$transaction_code}\n";
     $message .= "Amount: $ {$total_amount}\n";
-    $message .= "Please check admin dashboard for details.\n";
+    $message .= "Payment for: $ {$category}\n";
     $message .= "Leagile Research Center";
 
     return sendSMSNotification($message,'256773089254');

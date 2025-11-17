@@ -1,10 +1,10 @@
 <?php
 session_start();
 require_once __DIR__ . '/../xsert.php';
-require_once __DIR__ . '/../bin/Mailer.php';
+//require_once __DIR__ . '/../bin/Mailer.php';
 require_once __DIR__ . '/../bin/functions.php';
 
-use ZzimbaOnline\Mail\Mailer;
+//use ZzimbaOnline\Mail\Mailer;
 
 header('Content-Type: application/json');
 
@@ -13,11 +13,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$name = trim($_POST['name'] ?? '');
+// Read and sanitize inputs
+$fname = trim($_POST['first-name'] ?? '');
+$lname = trim($_POST['last-name'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $amount = trim($_POST['amount'] ?? '');
 $message = trim($_POST['message'] ?? '');
+$name = $fname . ' ' . $lname;
+$adminEmailSent='';
+$donorEmailSent='';
+// Normalize amount to a float (remove commas if any)
+$amount = str_replace(',', '', $amount);
+$amount = (float) $amount;
 
 // Validation
 if (empty($name) || empty($email) || empty($amount)) {
@@ -38,12 +46,27 @@ if (!is_numeric($amount) || $amount <= 0) {
 try {
     // Insert donation into database
     $donation_id = gen_uuid();
-    $stmt = $conn->prepare("INSERT INTO donations (id, donor_name, donor_email, donor_phone, amount, message, created_at, status) VALUES (?, ?, ?, ?, ?, ?, NOW(), 'pending')");
-    $stmt->bind_param("ssssds", $donation_id, $name, $email, $phone, $amount, $message);
-    
-    if (!$stmt->execute()) {
-        throw new Exception('Failed to save donation');
-    }
+
+$stmt = $conn->prepare("
+    INSERT INTO donations 
+    (id, donor_name, donor_email, donor_phone, amount, donor_msg, created_at, status, updated_at)
+    VALUES 
+    (:id, :donor_name, :donor_email, :donor_phone, :amount, :donor_msg, NOW(), 'pending', NOW())
+");
+
+$success = $stmt->execute([
+    ':id'          => $donation_id,
+    ':donor_name'  => $name,
+    ':donor_email' => $email,
+    ':donor_phone' => $phone,
+    ':amount'      => $amount,
+    ':donor_msg'   => $message
+]);
+
+if (!$success) {
+    throw new Exception('Failed to save donation');
+}
+
     
     // Send confirmation email to donor
     $donorEmailContent = "
@@ -61,10 +84,10 @@ try {
         <p>With gratitude,<br><strong>The Zzimba Online Team</strong></p>
     ";
     
-    $donorEmailSent = Mailer::sendMail($email, 'Thank You for Your Donation', $donorEmailContent);
+    //$donorEmailSent = Mailer::sendMail($email, 'Thank You for Your Donation', $donorEmailContent);
     
     // Send notification email to admin
-    $adminEmail = 'info@zzimbaonline.com';
+    $adminEmail = 'info@leagileresearch.com';
     $adminEmailContent = "
         <h2 style='color: #D92B13;'>New Donation Received</h2>
         <p>A new donation has been submitted on the platform.</p>
@@ -80,12 +103,13 @@ try {
         <p>Please process this donation and update the status accordingly.</p>
     ";
     
-    $adminEmailSent = Mailer::sendMail($adminEmail, 'New Donation Received', $adminEmailContent);
+    //$adminEmailSent = Mailer::sendMail($adminEmail, 'New Donation Received', $adminEmailContent);
     
     echo json_encode([
         'success' => true,
         'message' => 'Thank you for your donation! A confirmation email has been sent.',
         'donation_id' => $donation_id,
+        'amount' => $amount,
         'emails_sent' => [
             'donor' => $donorEmailSent,
             'admin' => $adminEmailSent

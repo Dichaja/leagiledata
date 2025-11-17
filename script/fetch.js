@@ -205,7 +205,7 @@ async function handleDownload(itemId) {
     try {
       const success = await syncCartItemWithServer(item, 'add');
       if (success) {
-        window.location.href = 'checkout.php';
+        window.location.href = `checkout.php?report_id=${encodeURIComponent(downloadBtn.dataset.id)}&amount=${encodeURIComponent(parseFloat(downloadBtn.dataset.price))}&action_type=report`;
       }
         console.log(downloadBtn)
     } catch (err) {
