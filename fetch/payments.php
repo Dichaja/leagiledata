@@ -10,7 +10,7 @@ header('Content-Type: application/json');
 $input = json_decode(file_get_contents('php://input'), true);
 $id = gen_uuid();
 
-if (!isset($input['user_id'], $input['item_id'], $input['action'], $input['actionType'], $input['donate'])) {
+if (!isset($input['user_id'], $input['item_id'], $input['action'], $input['actionType'])) {
     http_response_code(400);
     echo json_encode(["error" => "Missing required fields"]);
     exit;
@@ -50,7 +50,7 @@ try {
         if ($input['actionType'] == 'donate') {
             
             try{
-                $donation_id = $input['donate'];
+                $donation_id = $input['item_id'];
                 $stmt = $conn->prepare("SELECT id, donor_name, donor_email, amount FROM donations WHERE id = :id ");
                 $stmt->execute([':id' => $donation_id]);
                 $donation = $stmt->fetch(PDO::FETCH_ASSOC);

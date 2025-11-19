@@ -232,66 +232,8 @@ function searchReports($searchQuery = '', $category = '') {
     
     return $reports;
 }
-?>
-<!-- JS: Menu + Auth Dropdown Toggle 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-  // Element references
-  const menuToggleBtn = document.getElementById('menuToggleBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-  const authToggleBtn = document.getElementById('authToggleBtn');
-  const authDropdown = document.getElementById('authDropdown');
-  const userMenuBtn = document.getElementById('userMenuBtn');
-  const userDropdown = document.getElementById('userDropdown');
-  const carousel = document.getElementById('reportCarousel');
 
-  
-  // Nav menu toggle
-  if (menuToggleBtn && mobileMenu) {
-    menuToggleBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-  }
 
-  // Auth dropdown toggle
-  if (authToggleBtn && authDropdown) {
-    authToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      authDropdown.classList.toggle('hidden');
-    });
-  }
-
-  // User dropdown toggle
-  if (userMenuBtn && userDropdown) {
-    userMenuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      userDropdown.classList.toggle('hidden');
-    });
-  }
-
-  // Unified outside click handler to close all dropdowns/menus
-  document.addEventListener('click', (e) => {
-    if (mobileMenu && !mobileMenu.contains(e.target) && !menuToggleBtn.contains(e.target)) {
-      mobileMenu.classList.add('hidden');
-    }
-    if (authDropdown && !authDropdown.contains(e.target) && !authToggleBtn.contains(e.target)) {
-      authDropdown.classList.add('hidden');
-    }
-    if (userDropdown && !userDropdown.contains(e.target) && !userMenuBtn.contains(e.target)) {
-      userDropdown.classList.add('hidden');
-    }
-  });
-
-  // Optional: define scroll amount for carousel
-  if (carousel) {
-    const scrollAmount = () => carousel.offsetWidth * 0.9;
-    // You can now use `scrollAmount()` when attaching scroll buttons
-  }
-});
-
-</script>-->
-
-<?php 
 function siteFooter(){
 ?>
 <footer class="bg-slate-900 text-white py-12 w-full">

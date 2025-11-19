@@ -681,10 +681,9 @@ async function syncCartItemWithServer(item, action) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: user_id, 
-        item_id: item.id,
+        item_id: getType === "donate" ? donate_id : item.id,
         action: action,
-        actionType: getType,
-        donate: donate_id
+        actionType: getType
       })
     });
     
