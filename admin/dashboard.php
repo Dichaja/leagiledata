@@ -243,7 +243,7 @@ try {
                             </div>
                         </a>
 
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <a href="users_mgmt.php" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                             <div class="flex items-center">
                                 <div class="bg-blue-100 p-2 rounded-full mr-3">
                                     <i class="fas fa-users text-blue-600"></i>
@@ -257,7 +257,7 @@ try {
                                 <span class="text-lg font-bold text-gray-900"><?php echo $total_users; ?></span>
                                 <span class="block text-xs text-gray-500">total users</span>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
             </div>

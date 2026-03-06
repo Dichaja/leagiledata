@@ -219,6 +219,9 @@ $rejected_reports = count(array_filter($reports, fn($r) => $r['status'] === 'rej
                                             <button onclick="viewReport('<?php echo $report['id']; ?>')" class="text-blue-600 hover:text-blue-900">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                            <button onclick="editReport('<?php echo $report['id']; ?>')" class="text-yellow-600 hover:text-yellow-900">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
                                             <?php if ($report['download_url']): ?>
                                                 <a href="<?php echo BASE_URL . '/' . $report['download_url']; ?>" target="_blank" class="text-green-600 hover:text-green-900">
                                                     <i class="fas fa-download"></i>
@@ -267,10 +270,66 @@ $rejected_reports = count(array_filter($reports, fn($r) => $r['status'] === 'rej
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
             <div id="reportDetails">
                 <!-- Details will be loaded here -->
             </div>
+        </div>
+    </div>
+
+    <!-- Edit Report Modal -->
+    <div id="editReportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Edit Report</h3>
+                <button onclick="closeEditReportModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="editReportStatus" class="mb-2 text-sm"></div>
+            <form id="editReportForm" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="edit_id">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Title</label>
+                    <input type="text" name="title" id="edit_title" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Author</label>
+                    <input type="text" name="author" id="edit_author" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Description</label>
+                    <textarea name="description" id="edit_description" class="w-full border rounded px-3 py-2"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Category</label>
+                    <input type="text" name="category" id="edit_category" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Price</label>
+                    <input type="number" step="0.01" name="price" id="edit_price" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Page Count</label>
+                    <input type="number" name="page_count" id="edit_page_count" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Status</label>
+                    <select name="status" id="edit_status" class="w-full border rounded px-3 py-2">
+                        <option value="published">Published</option>
+                        <option value="pending">Pending</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">Thumbnail Image</label>
+                    <input type="file" name="thumbnail" id="edit_thumbnail" accept="image/*" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="closeEditReportModal()" class="px-4 py-2 rounded bg-gray-200">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded bg-primary text-white">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -292,7 +351,6 @@ $rejected_reports = count(array_filter($reports, fn($r) => $r['status'] === 'rej
             try {
                 const response = await fetch('<?php echo BASE_URL; ?>/fetch/admin-report-details.php?id=' + reportId);
                 const data = await response.json();
-                
                 if (data.success) {
                     document.getElementById('reportDetails').innerHTML = data.html;
                     document.getElementById('reportModal').classList.remove('hidden');
@@ -309,6 +367,65 @@ $rejected_reports = count(array_filter($reports, fn($r) => $r['status'] === 'rej
             document.getElementById('reportModal').classList.add('hidden');
             document.getElementById('reportModal').classList.remove('flex');
         }
+
+        // Edit Report
+        async function editReport(reportId) {
+            // Fetch report details
+            try {
+                const response = await fetch('<?php echo BASE_URL; ?>/fetch/admin-report-details.php?id=' + reportId + '&edit=1');
+                const data = await response.json();
+                if (data.success && data.report) {
+                    document.getElementById('edit_id').value = data.report.id;
+                    document.getElementById('edit_title').value = data.report.title;
+                    document.getElementById('edit_author').value = data.report.author;
+                    document.getElementById('edit_description').value = data.report.description;
+                    document.getElementById('edit_category').value = data.report.category;
+                    document.getElementById('edit_price').value = data.report.price;
+                    document.getElementById('edit_page_count').value = data.report.page_count;
+                    document.getElementById('edit_status').value = data.report.status || 'pending';
+                    document.getElementById('editReportStatus').textContent = '';
+                    document.getElementById('editReportModal').classList.remove('hidden');
+                    document.getElementById('editReportModal').classList.add('flex');
+                } else {
+                    alert('Error loading report for edit');
+                }
+            } catch (error) {
+                alert('Error loading report for edit');
+            }
+        }
+
+        function closeEditReportModal() {
+            document.getElementById('editReportModal').classList.add('hidden');
+            document.getElementById('editReportModal').classList.remove('flex');
+        }
+
+        document.getElementById('editReportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            document.getElementById('editReportStatus').textContent = '';
+            fetch('<?php echo BASE_URL; ?>/fetch/edit_report.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('editReportStatus').textContent = data.message;
+                    document.getElementById('editReportStatus').classList.add('text-green-600');
+                    setTimeout(() => { location.reload(); }, 1200);
+                } else {
+                    document.getElementById('editReportStatus').textContent = data.error || 'Update failed.';
+                    document.getElementById('editReportStatus').classList.remove('text-green-600');
+                    document.getElementById('editReportStatus').classList.add('text-red-600');
+                }
+            })
+            .catch(() => {
+                document.getElementById('editReportStatus').textContent = 'Update failed.';
+                document.getElementById('editReportStatus').classList.remove('text-green-600');
+                document.getElementById('editReportStatus').classList.add('text-red-600');
+            });
+        });
     </script>
 </body>
 </html>

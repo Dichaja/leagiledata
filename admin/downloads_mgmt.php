@@ -445,7 +445,7 @@ $downloads_stmt->execute();
                         </div>
                         <div class="flex justify-between mt-4 gap-2">
                             <?php if($download['download_status'] == 'pending'): ?>
-                            <button class="flex-1 py-2 bg-green-600 text-white rounded-md text-sm font-medium flex items-center justify-center" onclick="approvePay('<?php echo $download['payment_id'] ?>')">
+                            <button class="flex-1 py-2 bg-green-600 text-white rounded-md text-sm font-medium flex items-center justify-center" onclick="approvePay('<?php echo $download['download_id'] ?>')">
                                 <i class="fas fa-check mr-1"></i> Approve
                             </button>
                             <?php endif; ?>
@@ -744,12 +744,12 @@ function reloadPage() {
 async function confirmApprove() {
     let payId = document.getElementById('approvalModal');
     let idVal = payId.dataset.id;
-
     try {
         const res = await syncCartItemWithServer2(idVal, 'approve'); // pass string
         if (res) {
             closeModal(); // close approval modal
             document.getElementById('successModal').style.display = 'flex';
+             
         }
     } catch (error) {
         console.error('Cart sync errors:', error);

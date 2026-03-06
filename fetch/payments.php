@@ -10,9 +10,9 @@ header('Content-Type: application/json');
 $input = json_decode(file_get_contents('php://input'), true);
 $id = gen_uuid();
 
-if (!isset($input['user_id'], $input['item_id'], $input['action'], $input['actionType'])) {
+if (!isset($input['user_id'], $input['item_id'], $input['action'])) {
     http_response_code(400);
-    echo json_encode(["error" => "Missing required fields"]);
+    echo json_encode(["error" => "Missing required fields", "received" => $input]);
     exit;
 }
 

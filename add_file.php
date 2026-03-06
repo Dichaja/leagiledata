@@ -12,7 +12,7 @@ require_once('bin/page_settings.php');
  <?php siteHeader() ?>
 <main class="flex-grow">
   <div class="container mx-auto px-4 py-8">
-    <form action="bin/submit_report.php" method="POST" enctype="multipart/form-data">
+    <form action="fetch/register_report.php" method="POST" enctype="multipart/form-data">
       <div class="max-w-3xl mx-auto rounded-xl border bg-card text-card-foreground shadow">
   <!-- Header -->
   <div class="flex flex-col space-y-1.5 p-6">
@@ -90,11 +90,11 @@ require_once('bin/page_settings.php');
         </div>
       </div>
 
-      <!-- Thumbnail URL -->
+      <!-- Thumbnail Upload -->
       <div class="space-y-2">
-        <label class="text-sm font-medium leading-none" for="thumbnail">Thumbnail URL</label>
-        <input class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Enter URL for report thumbnail image" name="thumbnail" id="thumbnail">
-        <p class="text-[0.8rem] text-muted-foreground">Provide a URL to an image that represents your report</p>
+        <label class="text-sm font-medium leading-none" for="thumbnail">Upload Thumbnail Image</label>
+        <input type="file" accept="image/*" name="thumbnail" id="thumbnail" class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        <p class="text-[0.8rem] text-muted-foreground">Upload an image to represent your report (JPG, PNG, GIF, WEBP)</p>
       </div>
 
       <!-- PDF Upload -->
@@ -120,16 +120,17 @@ require_once('bin/page_settings.php');
         <p class="text-[0.8rem] text-muted-foreground">Enter the number of pages in your report</p>
       </div>
 
+      <!-- Success/Error Message -->
+      <div id="report-status" class="text-sm text-muted-foreground mb-2"></div>
       <!-- Form Actions -->
       <div class="flex justify-end gap-4">
-        <button class="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md border border-input bg-background shadow-sm hover:bg-accent" type="button">
+        <button class="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md border border-input bg-background shadow-sm hover:bg-accent" type="button" id="cancelBtn">
           Cancel
         </button>
-        <button class="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow hover:bg-primary/90 min-w-[120px]" type="submit">
+        <button class="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md bg-primary text-primary-foreground shadow hover:bg-primary/90 min-w-[120px]" type="submit" id="submitBtn">
           Submit Report
         </button>
       </div>
-      <?php echo $_SESSION['response'] ?>
     </form>
   </div>
 </div>
@@ -138,8 +139,42 @@ require_once('bin/page_settings.php');
   </div>
 </div>
 
-    </form>
-  </div>
+<script>
+document.querySelector('form.space-y-6').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  document.getElementById('report-status').textContent = '';
+  document.getElementById('submitBtn').disabled = true;
+  fetch('fetch/register_report.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('submitBtn').disabled = false;
+    if (data.success) {
+      document.getElementById('report-status').textContent = data.message;
+      document.getElementById('report-status').classList.add('text-green-600');
+      form.reset();
+    } else {
+      document.getElementById('report-status').textContent = data.error || 'Submission failed.';
+      document.getElementById('report-status').classList.remove('text-green-600');
+      document.getElementById('report-status').classList.add('text-red-600');
+    }
+  })
+  .catch(() => {
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('report-status').textContent = 'Submission failed.';
+    document.getElementById('report-status').classList.remove('text-green-600');
+    document.getElementById('report-status').classList.add('text-red-600');
+  });
+});
+document.getElementById('cancelBtn').addEventListener('click', function() {
+  document.querySelector('form.space-y-6').reset();
+  document.getElementById('report-status').textContent = '';
+});
+</script>
 </main>
 <!-- footer section -->
 <?php siteFooter() ?>

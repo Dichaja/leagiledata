@@ -15,6 +15,25 @@ if (empty($report_id)) {
     echo json_encode(['success' => false, 'message' => 'Report ID required']);
     exit;
 }
+$report_id = $_GET['id'] ?? '';
+if (empty($report_id)) {
+    echo json_encode(['success' => false, 'error' => 'Missing report ID']);
+    exit;
+}
+$stmt = $conn->prepare("SELECT * FROM reports WHERE id = ?");
+$stmt->execute([$report_id]);
+$report = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$report) {
+    echo json_encode(['success' => false, 'error' => 'Report not found']);
+    exit;
+}
+
+if (isset($_GET['edit']) && $_GET['edit'] == '1') {
+    echo json_encode(['success' => true, 'report' => $report]);
+    exit;
+}
+
+// ...existing code for details HTML...
 
 try {
     // Get report details

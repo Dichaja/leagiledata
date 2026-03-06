@@ -6,8 +6,44 @@ require_once('bin/page_settings.php');
 <html lang="en">
 <head>
     <?php include('bin/source_links.php'); ?>
- <style>
-   /* Additional custom styles if needed */
+    <?php
+    // Get report ID from URL
+    $reportId = $_GET['id'] ?? '';
+    $ogTitle = 'Research Report';
+    $ogDesc = 'Explore this research report.';
+    $ogImage = '';
+    $ogUrl = 'https://' . $_SERVER['HTTP_HOST'] . '/report-details.php?id=' . urlencode($reportId);
+    if ($reportId) {
+        // Try to fetch report details for OG tags
+        require_once('bin/functions.php');
+        $stmt = $conn->prepare("SELECT title, description, thumbnail FROM reports WHERE id = ?");
+        $stmt->execute([$reportId]);
+        $report = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($report) {
+            $ogTitle = htmlspecialchars($report['title']);
+            $ogDesc = htmlspecialchars($report['description']);
+            if (!empty($report['thumbnail'])) {
+                $ogImage =  $report['thumbnail'];// 'https://' . $_SERVER['HTTP_HOST'] . '/uploads/' . $report['thumbnail'];
+            }
+        }
+    }
+    ?>
+    <meta property="og:title" content="<?php echo $ogTitle; ?>" />
+    <meta property="og:description" content="<?php echo $ogDesc; ?>" />
+    <meta property="og:type" content="article" />
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="<?php echo $ogUrl; ?>" />
+    <?php if ($ogImage): ?>
+    <meta property="og:image" content="<?php echo $ogImage; ?>" />
+    <?php endif; ?>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<?php echo $ogTitle; ?>" />
+    <meta name="twitter:description" content="<?php echo $ogDesc; ?>" />
+    <?php if ($ogImage): ?>
+    <meta name="twitter:image" content="<?php echo $ogImage; ?>" />
+    <?php endif; ?>
+    <style>
         .report-image {
             max-height: 400px;
             object-fit: contain;
@@ -15,6 +51,21 @@ require_once('bin/page_settings.php');
         .sticky-sidebar {
             position: sticky;
             top: 20px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .social-btn svg {
+            width: 1.25em;
+            height: 1.25em;
+            vertical-align: middle;
         }
     </style>
 </head>
@@ -48,16 +99,31 @@ require_once('bin/page_settings.php');
         <!-- Main Content -->
         <div class="lg:w-2/3">
             <!-- Report Header -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                <h1 id="report-title" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Report Title</h1>
-                <div id="report-meta" class="text-sm text-gray-500 mb-4">
-                    <span id="report-category" class="inline-block bg-gray-100 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2">Category</span>
-                    <span id="report-date">Published: Loading...</span>
-                </div>
-                <div class="flex justify-center mb-6">
-                    <img id="report-image" src="" alt="Report Image" class="report-image w-full max-w-lg bg-gray-50 p-4 rounded">
-                </div>
-                <div id="report-description" class="prose max-w-none">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                                <h1 id="report-title" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Report Title</h1>
+                                <div id="report-meta" class="text-sm text-gray-500 mb-4">
+                                        <span id="report-category" class="inline-block bg-gray-100 rounded-full px-3 py-1 text-xs font-semibold text-gray-700 mr-2">Category</span>
+                                        <span id="report-date">Published: Loading...</span>
+                                </div>
+                                <div class="flex justify-center mb-6">
+                                        <img id="report-image" src="" alt="Report Image" class="report-image w-full max-w-lg bg-gray-50 p-4 rounded">
+                                </div>
+                                <!-- Social Share Buttons -->
+                                <div class="flex gap-3 mb-4 justify-center">
+                                    <button id="share-x" class="social-btn bg-blue-50 text-blue-700 hover:bg-blue-100" title="Share on X">
+                                        <span class="sr-only">Share on X</span>
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.53 7.477l4.47-7.477h-2.01l-3.49 5.842-2.99-5.842h-2.01l4.47 7.477-5.01 8.523h2.01l3.99-6.79 3.99 6.79h2.01z"/></svg> X
+                                    </button>
+                                    <button id="share-facebook" class="social-btn bg-blue-100 text-blue-800 hover:bg-blue-200" title="Share on Facebook">
+                                        <span class="sr-only">Share on Facebook</span>
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.675 0h-21.35c-.733 0-1.325.592-1.325 1.326v21.348c0 .733.592 1.326 1.325 1.326h11.495v-9.294h-3.128v-3.622h3.128v-2.771c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.312h3.587l-.467 3.622h-3.12v9.294h6.116c.733 0 1.325-.593 1.325-1.326v-21.349c0-.733-.592-1.326-1.325-1.326z"/></svg> Facebook
+                                    </button>
+                                    <button id="share-whatsapp" class="social-btn bg-green-50 text-green-700 hover:bg-green-100" title="Share on WhatsApp">
+                                        <span class="sr-only">Share on WhatsApp</span>
+                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.48A11.93 11.93 0 0 0 12.07.07C6.13.07 1.07 5.13 1.07 11.07c0 1.95.51 3.85 1.48 5.52L.07 23.93l7.34-2.48a11.93 11.93 0 0 0 4.66.94c5.94 0 11-5.06 11-11 0-2.54-.83-4.91-2.55-6.91zm-8.45 17.07c-1.5 0-2.97-.38-4.27-1.09l-.3-.16-4.36 1.47 1.44-4.25-.19-.31A9.07 9.07 0 0 1 3.07 11.07c0-4.97 4.04-9.01 9.01-9.01 2.41 0 4.68.94 6.39 2.65a8.98 8.98 0 0 1 2.62 6.36c0 4.97-4.04 9.01-9.01 9.01zm5.01-6.41c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.14-.42-2.17-1.33-.8-.71-1.34-1.59-1.5-1.86-.16-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2.01-.22-.54-.45-.47-.61-.48-.16-.01-.34-.01-.52-.01-.18 0-.48.07-.73.34-.25.27-.97.95-.97 2.31s.99 2.68 1.13 2.87c.14.18 1.95 2.98 4.74 4.05.66.28 1.18.45 1.58.58.66.21 1.26.18 1.73.11.53-.08 1.6-.65 1.83-1.28.23-.63.23-1.17.16-1.28-.07-.11-.25-.18-.52-.32z"/></svg> WhatsApp
+                                    </button>
+                                </div>
+                                <div id="report-description" class="prose max-w-none">
                     <p>Loading description...</p>
                 </div>
             </div>
@@ -310,7 +376,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showError('Report not found');
             return;
         }
-        
         // Basic Info
         document.getElementById('report-title').textContent = report.title;
         document.getElementById('report-price').textContent = `$${report.price}`;
@@ -322,15 +387,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // Image
         const reportImage = document.getElementById('report-image');
         if (report.thumbnail) {
-            reportImage.src = report.thumbnail;
+            reportImage.src = `uploads/${report.thumbnail}`;
             reportImage.alt = report.title;
         } else {
             reportImage.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb'%3E%3Cpath d='M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z'/%3E%3Cpath d='M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z'/%3E%3C/svg%3E";
         }
-        
         // Description
         document.getElementById('report-description').innerHTML = `<p>${report.description}</p>`;
-        
+                // Social Share URLs
+                // Use a short share URL (e.g., leagile.com/r?id=xxx)
+                const shortUrl = `https://${window.location.host}/r?id=${report.id}`;
+                const pageUrl = encodeURIComponent(shortUrl);
+                const shareText = encodeURIComponent(report.title + ' - ' + report.description);
+                document.getElementById('share-x').onclick = function() {
+                    window.open(`https://twitter.com/intent/tweet?url=${pageUrl}&text=${shareText}`,'_blank');
+                };
+                document.getElementById('share-facebook').onclick = function() {
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,'_blank');
+                };
+                document.getElementById('share-whatsapp').onclick = function() {
+                    window.open(`https://wa.me/?text=${shareText}%20${pageUrl}`,'_blank');
+                };
         // Specifications
         const specsHtml = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -346,27 +423,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div>
                     <h3 class="font-medium text-gray-700 mb-2">Access</h3>
                     <ul class="text-sm text-gray-600 space-y-1">
-                        <li><strong>Download URL:</strong> <a href="${report.download_url}" class="text-blue-600 hover:underline" target="_blank">Direct link</a></li>
+                        <li><strong>Download URL:</strong> <a href="${report.download_url}" class="text-blue-600 hover:underline" target="_blank">Direct link</a></nli>
                         <li><strong>License:</strong> Commercial use permitted</li>
                     </ul>
                 </div>
             </div>
         `;
         //document.getElementById('report-specifications').innerHTML = specsHtml;
-        
         // Set up action buttons
         const downloadBtn = document.getElementById('download-btn');
         const addToCartBtn = document.getElementById('add-to-cart-btn');
-        
         downloadBtn.dataset.id = reportId;
         downloadBtn.dataset.title = report.title;
         downloadBtn.dataset.price = report.price;
         downloadBtn.dataset.url = report.download_url;
-        
         addToCartBtn.dataset.id = reportId;
         addToCartBtn.dataset.title = report.title;
         addToCartBtn.dataset.price = report.price;
-        
         // Show content after rendering
         showContent();
     }

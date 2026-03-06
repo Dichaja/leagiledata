@@ -74,7 +74,6 @@ $result = $stmt->execute([
     }
     header("Location: ../add_file.php");
     exit();
-
 } else {
     $_SESSION['response'] = "Invalid request.";
     header("Location: ../add_file.php");
