@@ -30,17 +30,30 @@
 <html lang="en">
 <head>
     <?php include('bin/source_links.php'); ?>
+    <title>Research Services & Data Analysis Consulting | Leagile</title>
+    <meta name="description" content="Expert research, consulting, and data analysis services. Access reports, insights, and professional advice for business and academic success.">
+    <meta name="keywords" content="research services, data analysis, consulting, business research, academic research, expert reports, market analysis, industry insights, custom research, professional consulting, data-driven decisions, uganda research">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Leagile",
+      "url": "https://leagileresearch.com",
+      "logo": "https://leagileresearch.com/img_data/logo.png",
+      "sameAs": ["https://facebook.com/leagile", "https://twitter.com/leagile"]
+    }
+    </script>
 </head>
 <body class="font-sans bg-gray-100 text-gray-900">
    <?php siteHeader() ?>
      <div class="relative">
-        <div class="h-[200px] sm:h-[190px] w-full bg-cover bg-center py-2" style="background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&q=80');">
+        <div class="h-[200px] sm:h-[190px] w-full bg-cover bg-center py-2" style="background-image: url('img_data/bd_cover.jpg');">
             <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-gray-900/50"></div>
             
             <div class="container mx-auto h-full flex flex-col justify-center px-4 relative z-10">
                 <!-- Main Title -->
-                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 max-w-2xl">
-                    Obtain Accurate Data Requirements
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-4 max-w-2xl">
+                    Research Services & Data Analysis Consulting
                 </h1>
                 
                 <!-- Key Stats Grid - Compact -->
@@ -82,8 +95,8 @@
     <main class="container mx-auto px-4 mt-4">
         <section class="mb-6 sm:mb-8">
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-lg sm:text-xl font-bold">Trending Research Today</h2>
-                <a href="categories.php" class="text-sm text-blue-600 hover:underline">See all deals</a>
+                <h2 class="text-lg sm:text-xl font-bold">Featured Research Reports</h2>
+                <a href="categories.php" class="text-sm text-blue-600 hover:underline">See all research reports</a>
             </div>
             <div id="report-cards" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
                 <!-- Research report card items -->
@@ -100,10 +113,9 @@
                     <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide">Premium</span>
                     <span class="ml-3 text-indigo-600 font-medium">Most Popular</span>
                 </div>
-                
-                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Leagile Research Prime</h2>
-                
-                <p class="text-lg text-gray-700 mb-8">Full access to all reports and expert consultations with our premium membership.</p>
+                <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Our Consulting Solutions</h2>
+                <h3 class="text-lg text-gray-700 mb-4">Data Analysis Expertise & Business Research</h3>
+                <p class="text-base text-gray-700 mb-8">Full access to all reports and expert consultations with our premium membership.</p>
                 
                 <!-- Pricing Tiers -->
                 <div class="mb-8 space-y-4">
@@ -174,27 +186,22 @@
                         <svg class="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span class="text-gray-700">Discount on Downloads</span>
+                        <span class="text-gray-700">Industry-Specific Insights</span>
                     </div>
                     <div class="flex items-start">
                         <svg class="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span class="text-gray-700">Priority email &amp; phone support</span>
+                        <span class="text-gray-700">Academic Research Support</span>
                     </div>
                     <div class="flex items-start">
                         <svg class="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span class="text-gray-700">Expert Consultations</span>
-                    </div>
-                    <div class="flex items-start">
-                        <svg class="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span class="text-gray-700">Advanced analytics dashboard</span>
+                        <span class="text-gray-700">Request Expert Consultation</span>
                     </div>
                 </div>
+                <a href="services.php" class="text-sm text-blue-600 hover:underline mt-4 block">Explore our data analysis services</a>
             </div>
             
             <!-- Image -->
