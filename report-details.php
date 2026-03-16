@@ -1,13 +1,8 @@
 <?php
 session_start();
 require_once('bin/page_settings.php');
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <?php include('bin/source_links.php'); ?>
-    <?php
-    // Get report ID from URL
+
+// Get report ID from URL
     $reportId = $_GET['id'] ?? '';
     $ogTitle = 'Research Report';
     $ogDesc = 'Explore this research report.';
@@ -27,7 +22,35 @@ require_once('bin/page_settings.php');
             }
         }
     }
-    ?>
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <?php include('bin/source_links.php'); ?>
+        <!-- SEO Meta Tags -->
+        <title><?php echo $ogTitle; ?> | Leagile Research Reports</title>
+        <meta name="description" content="<?php echo $ogDesc; ?>">
+        <link rel="canonical" href="<?php echo $ogUrl; ?>" />
+        <meta name="robots" content="index, follow">
+        <!-- Open Graph & Twitter tags already present -->
+        <!-- Structured Data -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Report",
+            "name": "<?php echo $ogTitle; ?>",
+            "description": "<?php echo $ogDesc; ?>",
+            "url": "<?php echo $ogUrl; ?>",
+            <?php if ($ogImage): ?>
+            "image": "<?php echo $ogImage; ?>",
+            <?php endif; ?>
+            "publisher": {
+                "@type": "Organization",
+                "name": "Leagile Data Research Center",
+                "url": "https://leagileresearch.com"
+            }
+        }
+        </script>
     <meta property="og:title" content="<?php echo $ogTitle; ?>" />
     <meta property="og:description" content="<?php echo $ogDesc; ?>" />
     <meta property="og:type" content="article" />

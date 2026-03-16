@@ -5,7 +5,31 @@ require_once('bin/page_settings.php');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include('bin/source_links.php'); ?>
+        <?php include('bin/source_links.php'); ?>
+        <!-- SEO Meta Tags -->
+        <title>Research Categories | Leagile Data Research Center</title>
+        <meta name="description" content="Browse our comprehensive collection of research files by category. Find datasets, reports, and resources for your research needs.">
+        <link rel="canonical" href="https://<?php echo $_SERVER['HTTP_HOST']; ?>/categories.php" />
+        <meta name="robots" content="index, follow">
+        <meta property="og:title" content="Research Categories | Leagile Data Research Center" />
+        <meta property="og:description" content="Browse our comprehensive collection of research files by category. Find datasets, reports, and resources for your research needs." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://<?php echo $_SERVER['HTTP_HOST']; ?>/categories.php" />
+        <meta property="og:image" content="img_data/logo_fav.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Research Categories | Leagile Data Research Center" />
+        <meta name="twitter:description" content="Browse our comprehensive collection of research files by category. Find datasets, reports, and resources for your research needs." />
+        <meta name="twitter:image" content="img_data/logo_fav.png" />
+        <!-- Structured Data -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": "Research Categories",
+            "description": "Browse our comprehensive collection of research files by category. Find datasets, reports, and resources for your research needs.",
+            "url": "https://leagileresearch.com/categories.php"
+        }
+        </script>
 </head>
 <body>
  <!-- Header Section -->

@@ -5,7 +5,35 @@ require_once('bin/page_settings.php');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include('bin/source_links.php'); ?>
+        <?php include('bin/source_links.php'); ?>
+        <!-- SEO Meta Tags -->
+        <title>Research Services | Leagile Data Research Center</title>
+        <meta name="description" content="Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs.">
+        <link rel="canonical" href="https://<?php echo $_SERVER['HTTP_HOST']; ?>/services.php" />
+        <meta name="robots" content="index, follow">
+        <meta property="og:title" content="Research Services | Leagile Data Research Center" />
+        <meta property="og:description" content="Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://<?php echo $_SERVER['HTTP_HOST']; ?>/services.php" />
+        <meta property="og:image" content="img_data/logo_fav.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Research Services | Leagile Data Research Center" />
+        <meta name="twitter:description" content="Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs." />
+        <meta name="twitter:image" content="img_data/logo_fav.png" />
+        <!-- Structured Data -->
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Research Services",
+            "description": "Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs.",
+            "provider": {
+                "@type": "Organization",
+                "name": "Leagile Data Research Center"
+            },
+            "url": "https://leagileresearch.com/services.php"
+        }
+        </script>
 </head>
 <body>
  <!-- Header Section -->
