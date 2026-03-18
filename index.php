@@ -98,7 +98,7 @@
                 <h2 class="text-lg sm:text-xl font-bold">Featured Research Reports</h2>
                 <a href="categories.php" class="text-sm text-blue-600 hover:underline">See all research reports</a>
             </div>
-            <div id="report-cards" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div id="report-cards" class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 sm:gap-8 p-4 sm:p-6">
                 <!-- Research report card items -->
             </div>
         </section>

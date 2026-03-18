@@ -34,32 +34,23 @@ $featured_experts = array_slice($experts, 0, 3);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Experts | Leagile Data Research Center</title>
-    <meta name="description" content="Connect with top research experts in various domains for consultations and insights. Find specialists in data science, economics, social sciences, and more.">
-    <link rel="canonical" href="https://<?php echo $_SERVER['HTTP_HOST']; ?>/experts.php" />
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Research Experts | Leagile Data Research Center" />
-    <meta property="og:description" content="Connect with top research experts in various domains for consultations and insights." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://<?php echo $_SERVER['HTTP_HOST']; ?>/experts.php" />
-    <meta property="og:image" content="img_data/logo_fav.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Research Experts | Leagile Data Research Center" />
-    <meta name="twitter:description" content="Connect with top research experts in various domains for consultations and insights." />
-    <meta name="twitter:image" content="img_data/logo_fav.png" />
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Leagile Data Research Center",
-      "url": "https://leagileresearch.com",
-      "sameAs": [
-        "https://twitter.com/leagileresearch",
-        "https://facebook.com/leagileresearch"
-      ]
-    }
-    </script>
+      <?php
+      $page_title = 'Find Research Experts | Leagile Data Research Center';
+      $page_description = 'Connect with top research experts in various fields. View expert profiles, specialties, and book consultations for your research projects.';
+      $page_canonical = 'https://' . $_SERVER['HTTP_HOST'] . '/experts.php';
+      $page_og_type = 'website';
+      $page_og_image = 'img_data/logo_fav.png';
+      $page_og_url = $page_canonical;
+      $page_structured_data = '<script type="application/ld+json">' . json_encode([
+          '@context' => 'https://schema.org',
+          '@type' => 'ProfilePage',
+          'name' => 'Find Research Experts',
+          'description' => $page_description,
+          'url' => $page_canonical
+      ], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . '</script>';
+      include('bin/source_links.php');
+      echo $page_structured_data;
+      ?>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="tail.css">
     <link rel="icon" type="image/png" href="img_data/logo_fav.png" />

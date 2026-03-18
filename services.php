@@ -5,35 +5,27 @@ require_once('bin/page_settings.php');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <?php include('bin/source_links.php'); ?>
-        <!-- SEO Meta Tags -->
-        <title>Research Services | Leagile Data Research Center</title>
-        <meta name="description" content="Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs.">
-        <link rel="canonical" href="https://<?php echo $_SERVER['HTTP_HOST']; ?>/services.php" />
-        <meta name="robots" content="index, follow">
-        <meta property="og:title" content="Research Services | Leagile Data Research Center" />
-        <meta property="og:description" content="Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://<?php echo $_SERVER['HTTP_HOST']; ?>/services.php" />
-        <meta property="og:image" content="img_data/logo_fav.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Research Services | Leagile Data Research Center" />
-        <meta name="twitter:description" content="Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs." />
-        <meta name="twitter:image" content="img_data/logo_fav.png" />
-        <!-- Structured Data -->
-        <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Service",
-            "name": "Research Services",
-            "description": "Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs.",
-            "provider": {
-                "@type": "Organization",
-                "name": "Leagile Data Research Center"
-            },
-            "url": "https://leagileresearch.com/services.php"
-        }
-        </script>
+        <?php
+        $page_title = 'Research Services | Leagile Data Research Center';
+        $page_description = 'Comprehensive research services including data collection, analysis, and expert support for academic, business, and policy needs.';
+        $page_canonical = 'https://' . $_SERVER['HTTP_HOST'] . '/services.php';
+        $page_og_type = 'website';
+        $page_og_image = 'img_data/logo_fav.png';
+        $page_og_url = $page_canonical;
+        $page_structured_data = '<script type="application/ld+json">' . json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'Service',
+            'name' => 'Research Services',
+            'description' => $page_description,
+            'provider' => [
+                '@type' => 'Organization',
+                'name' => 'Leagile Data Research Center'
+            ],
+            'url' => $page_canonical
+        ], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . '</script>';
+        include('bin/source_links.php');
+        echo $page_structured_data;
+        ?>
 </head>
 <body>
  <!-- Header Section -->

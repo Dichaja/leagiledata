@@ -26,46 +26,32 @@ require_once('bin/page_settings.php');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <?php include('bin/source_links.php'); ?>
-        <!-- SEO Meta Tags -->
-        <title><?php echo $ogTitle; ?> | Leagile Research Reports</title>
-        <meta name="description" content="<?php echo $ogDesc; ?>">
-        <link rel="canonical" href="<?php echo $ogUrl; ?>" />
-        <meta name="robots" content="index, follow">
-        <!-- Open Graph & Twitter tags already present -->
-        <!-- Structured Data -->
-        <script type="application/ld+json">
-        {
-            "@context": "https://schema.org",
-            "@type": "Report",
-            "name": "<?php echo $ogTitle; ?>",
-            "description": "<?php echo $ogDesc; ?>",
-            "url": "<?php echo $ogUrl; ?>",
-            <?php if ($ogImage): ?>
-            "image": "<?php echo $ogImage; ?>",
-            <?php endif; ?>
-            "publisher": {
-                "@type": "Organization",
-                "name": "Leagile Data Research Center",
-                "url": "https://leagileresearch.com"
-            }
+        <?php
+        $page_title = $ogTitle . ' | Leagile Research Reports';
+        $page_description = $ogDesc;
+        $page_canonical = $ogUrl;
+        $page_og_type = 'article';
+        $page_og_image = $ogImage ?: 'img_data/logo_fav.png';
+        $page_og_url = $ogUrl;
+        $structured_data_array = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Report',
+            'name' => $ogTitle,
+            'description' => $ogDesc,
+            'url' => $ogUrl,
+            'publisher' => [
+                '@type' => 'Organization',
+                'name' => 'Leagile Data Research Center',
+                'url' => 'https://leagileresearch.com'
+            ]
+        ];
+        if ($ogImage) {
+            $structured_data_array['image'] = $ogImage;
         }
-        </script>
-    <meta property="og:title" content="<?php echo $ogTitle; ?>" />
-    <meta property="og:description" content="<?php echo $ogDesc; ?>" />
-    <meta property="og:type" content="article" />
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:url" content="<?php echo $ogUrl; ?>" />
-    <?php if ($ogImage): ?>
-    <meta property="og:image" content="<?php echo $ogImage; ?>" />
-    <?php endif; ?>
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="<?php echo $ogTitle; ?>" />
-    <meta name="twitter:description" content="<?php echo $ogDesc; ?>" />
-    <?php if ($ogImage): ?>
-    <meta name="twitter:image" content="<?php echo $ogImage; ?>" />
-    <?php endif; ?>
+        $page_structured_data = '<script type="application/ld+json">' . json_encode($structured_data_array, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . '</script>';
+        include('bin/source_links.php');
+        echo $page_structured_data;
+        ?>
     <style>
         .report-image {
             max-height: 400px;

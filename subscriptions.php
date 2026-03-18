@@ -5,7 +5,23 @@ require_once('bin/page_settings.php');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php include('bin/source_links.php'); ?>
+    <?php
+    $page_title = 'Subscriptions | Leagile Data Research Center';
+    $page_description = 'Subscribe to access premium research files, expert consultations, and exclusive resources. Flexible plans for individuals and organizations.';
+    $page_canonical = 'https://' . $_SERVER['HTTP_HOST'] . '/subscriptions.php';
+    $page_og_type = 'website';
+    $page_og_image = 'img_data/logo_fav.png';
+    $page_og_url = $page_canonical;
+    $page_structured_data = '<script type="application/ld+json">' . json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'OfferCatalog',
+        'name' => 'Subscriptions',
+        'description' => $page_description,
+        'url' => $page_canonical
+    ], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . '</script>';
+    include('bin/source_links.php');
+    echo $page_structured_data;
+    ?>
 </head>
 <body>
  <!-- Header Section -->
